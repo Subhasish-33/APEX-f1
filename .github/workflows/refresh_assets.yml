@@ -1,0 +1,35 @@
+name: Refresh Media Assets
+
+on:
+  schedule:
+    - cron: '0 0 * * 0' # Weekly at Sunday midnight
+  workflow_dispatch: # Manual trigger
+
+jobs:
+  refresh-assets:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install Dependencies
+        run: |
+          pip install Pillow aiohttp structlog tenacity
+
+      - name: Run Ingestion Pipeline
+        run: |
+          python3 scripts/assets/download_headshots.py
+          python3 scripts/assets/download_team_logos.py
+          python3 scripts/assets/fetch_video_ids.py
+
+      - name: Commit and Push Changes
+        run: |
+          git config --global user.name 'APEX-F1 Asset Bot'
+          git config --global user.email 'bot@apex-f1.com'
+          git add apps/web/public/assets/
+          git diff --quiet && git diff --staged --quiet || (git commit -m "chore: nightly asset refresh [skip ci]" && git push)
