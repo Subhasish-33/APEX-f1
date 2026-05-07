@@ -84,6 +84,18 @@ function TeamCard({ team, index }: { team: any; index: number }) {
             {team.shortName}
           </h3>
 
+          {/* Legacy Stats */}
+          <div className="grid grid-cols-2 gap-4 mb-6 pt-4 border-t border-white/5">
+            <div>
+              <span className="block text-[8px] text-white/40 font-black uppercase tracking-widest mb-1">Titles</span>
+              <span className="text-sm font-black text-white italic">{team.championships}</span>
+            </div>
+            <div>
+              <span className="block text-[8px] text-white/40 font-black uppercase tracking-widest mb-1">Wins</span>
+              <span className="text-sm font-black text-white italic">{team.totalWins}</span>
+            </div>
+          </div>
+
           <div className="flex flex-wrap gap-2">
             <span className="px-2 py-0.5 bg-white/5 text-white/60 text-[8px] font-bold uppercase tracking-widest rounded-full border border-white/5">
               {team.car.engineSupplier}

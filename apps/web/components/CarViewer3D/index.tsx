@@ -87,8 +87,8 @@ export const CarViewer3D = forwardRef<CarViewerHandle, CarViewer3DProps>(({
               draggingDamping={0.1}
             />
 
-            <ambientLight intensity={focusId ? 0.2 : 0.4} />
-            <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} intensity={focusId ? 0.5 : 1} castShadow />
+            <ambientLight intensity={focusId ? 0.2 : 0.3} />
+            <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} intensity={focusId ? 0.5 : 0.8} castShadow />
             
             {/* Dynamic Focal Point Light */}
             <AnimatePresence>
@@ -106,7 +106,7 @@ export const CarViewer3D = forwardRef<CarViewerHandle, CarViewer3DProps>(({
 
             {/* General Rim Light */}
             {!focusId && (
-              <pointLight position={[0, 2, -4]} color={teamColor} intensity={1.2} />
+              <pointLight position={[0, 2, -4]} color={teamColor} intensity={0.8} />
             )}
 
             <group position={[0, -0.4, 0]}>
@@ -139,7 +139,7 @@ export const CarViewer3D = forwardRef<CarViewerHandle, CarViewer3DProps>(({
               <Bloom 
                 luminanceThreshold={0.9} 
                 mipmapBlur 
-                intensity={focusId ? 0.8 : 0.5} 
+                intensity={focusId ? 0.8 : 0.3} 
                 radius={0.4} 
               />
             </EffectComposer>

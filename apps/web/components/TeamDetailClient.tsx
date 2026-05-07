@@ -5,8 +5,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { CarViewer3D } from "@/components/CarViewer3D";
 import { HotspotData } from "@/components/CarViewer3D/Hotspots";
 import { TeamData } from "@/data/f1Teams2025";
-import { Lock, FileText, Zap, Wind, Settings, ArrowLeft } from "lucide-react";
+import { Lock, FileText, Zap, Wind, Settings, ArrowLeft, Activity } from "lucide-react";
 import { useOrchestration } from "@/context/OrchestrationContext";
+import { HistoryChart } from "@/components/HistoryChart";
 
 interface TeamDetailClientProps {
   team: TeamData;
@@ -231,6 +232,42 @@ export function TeamDetailClient({ team }: TeamDetailClientProps) {
                 </section>
               )}
 
+              {/* HISTORICAL PERFORMANCE LAYER */}
+              <section className="pt-8 border-t border-white/10">
+                <div className="flex items-center gap-2 mb-6">
+                   <Activity size={14} className="text-f1-red" />
+                   <h3 className="text-white font-black uppercase italic tracking-wider">Historical Achievement</h3>
+                </div>
+                
+                <HistoryChart 
+                  teamColor={team.primaryColor}
+                  data={[
+                    { year: 2020, points: 131, position: 6, wins: 0 },
+                    { year: 2021, points: 323.5, position: 3, wins: 0 },
+                    { year: 2022, points: 554, position: 2, wins: 4 },
+                    { year: 2023, points: 406, position: 3, wins: 1 },
+                    { year: 2024, points: 652, position: 2, wins: 5 },
+                  ]}
+                />
+
+                {/* Rivalry Analysis */}
+                <div className="mt-6 bg-white/5 rounded-sm p-4 border border-white/5 flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center border border-white/10">
+                       <Zap size={16} className="text-white/40" />
+                    </div>
+                    <div>
+                      <span className="text-[8px] text-white/40 font-black uppercase tracking-widest block mb-1">Primary Rival</span>
+                      <span className="text-xs font-black text-white uppercase italic">Oracle Red Bull Racing</span>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-[8px] text-white/40 font-black uppercase tracking-widest block mb-1">Gap to Leader</span>
+                    <span className="text-xs font-black text-f1-red uppercase">-37.5 PTS</span>
+                  </div>
+                </div>
+              </section>
+
               {/* PREDICTIVE INTELLIGENCE LAYER */}
               <section className="pt-8 border-t border-white/10">
                 <div className="flex items-center gap-2 mb-6">
@@ -254,25 +291,28 @@ export function TeamDetailClient({ team }: TeamDetailClientProps) {
                   <div className="space-y-3">
                     <span className="block text-[8px] text-white/20 font-black uppercase tracking-[0.2em]">Explainable Intelligence: Factor Contribution</span>
                     {[
-                      { factor: "Aero Efficiency", impact: "+12.4%", color: "bg-green-500" },
-                      { factor: "MGU-K Recovery", impact: "+5.2%", color: "bg-green-500" },
-                      { factor: "Minimum Weight", impact: "-2.1%", color: "bg-red-500" },
-                    ].map((f, i) => (
-                      <div key={i} className="flex items-center gap-4">
-                        <span className="text-[10px] font-bold text-white/60 w-24 uppercase tracking-tighter">{f.factor}</span>
-                        <div className="flex-1 h-1 bg-white/5 rounded-full overflow-hidden">
-                          <motion.div 
-                            initial={{ width: 0 }}
-                            animate={{ width: "70%" }}
-                            transition={{ delay: 0.5 + (i * 0.1), duration: 1 }}
-                            className={`h-full ${f.color}`}
-                          />
+                      { factor: "Aero Efficiency", impact: "+12.4%", color: "bg-green-500", relatedParts: ["front-wing", "sidepod", "rear-wing"] },
+                      { factor: "MGU-K Recovery", impact: "+5.2%", color: "bg-green-500", relatedParts: ["engine"] },
+                      { factor: "Minimum Weight", impact: "-2.1%", color: "bg-red-500", relatedParts: [] },
+                    ].map((f, i) => {
+                      const isRelated = f.relatedParts.includes(focusId || "");
+                      return (
+                        <div key={i} className={`flex items-center gap-4 transition-all duration-500 ${isRelated ? 'opacity-100 scale-105' : 'opacity-40'}`}>
+                          <span className={`text-[10px] font-bold w-24 uppercase tracking-tighter ${isRelated ? 'text-white' : 'text-white/60'}`}>{f.factor}</span>
+                          <div className="flex-1 h-1 bg-white/5 rounded-full overflow-hidden">
+                            <motion.div 
+                              initial={{ width: 0 }}
+                              animate={{ width: "70%" }}
+                              transition={{ delay: 0.5 + (i * 0.1), duration: 1 }}
+                              className={`h-full ${f.color}`}
+                            />
+                          </div>
+                          <span className={`text-[10px] font-black ${f.impact.startsWith('+') ? 'text-green-500' : 'text-red-500'}`}>
+                            {f.impact}
+                          </span>
                         </div>
-                        <span className={`text-[10px] font-black ${f.impact.startsWith('+') ? 'text-green-500' : 'text-red-500'}`}>
-                          {f.impact}
-                        </span>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
 
                   <p className="text-[10px] text-white/40 leading-relaxed italic">

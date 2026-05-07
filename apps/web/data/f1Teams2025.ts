@@ -5,6 +5,8 @@ export interface TeamData {
   primaryColor: string;
   accentColor: string;
   modelPath: string;
+  championships: number;
+  totalWins: number;
   car: {
     chassis: string;
     engine: string;
@@ -36,6 +38,8 @@ export const f1Teams2025: Record<string, TeamData> = {
     primaryColor: "#E10600",
     accentColor: "#FFF200",
     modelPath: "/models/ferrari.glb",
+    championships: 16,
+    totalWins: 243,
     car: {
       chassis: "Ferrari Carbon-fiber composite monocoque",
       engine: "Ferrari 066/12",
@@ -65,6 +69,8 @@ export const f1Teams2025: Record<string, TeamData> = {
     primaryColor: "#001A30",
     accentColor: "#FCD700",
     modelPath: "/models/red_bull.glb",
+    championships: 6,
+    totalWins: 113,
     car: {
       chassis: "Red Bull Racing carbon composite monocoque",
       engine: "Honda RBPTH003",
@@ -94,6 +100,8 @@ export const f1Teams2025: Record<string, TeamData> = {
     primaryColor: "#27F4D2",
     accentColor: "#000000",
     modelPath: "/models/mercedes.glb",
+    championships: 8,
+    totalWins: 125,
     car: {
       chassis: "Mercedes carbon composite",
       engine: "Mercedes-AMG F1 M16 E Performance",
@@ -123,6 +131,8 @@ export const f1Teams2025: Record<string, TeamData> = {
     primaryColor: "#FF8000",
     accentColor: "#5FB3FF",
     modelPath: "/models/mclaren.glb",
+    championships: 8,
+    totalWins: 183,
     car: {
       chassis: "McLaren carbon fibre monocoque",
       engine: "Mercedes-AMG F1 M16 E Performance",
@@ -152,6 +162,8 @@ export const f1Teams2025: Record<string, TeamData> = {
     primaryColor: "#0090FF",
     accentColor: "#FF70D4",
     modelPath: "/models/alpine.glb",
+    championships: 2,
+    totalWins: 36,
     car: {
       chassis: "Alpine carbon fibre",
       engine: "Renault E-Tech RE25",
@@ -181,6 +193,8 @@ export const f1Teams2025: Record<string, TeamData> = {
     primaryColor: "#006F62",
     accentColor: "#CEDC00",
     modelPath: "/models/aston_martin.glb",
+    championships: 0,
+    totalWins: 5,
     car: {
       chassis: "Aston Martin carbon composite",
       engine: "Mercedes-AMG F1 M16 E Performance",
@@ -210,6 +224,8 @@ export const f1Teams2025: Record<string, TeamData> = {
     primaryColor: "#005AFF",
     accentColor: "#002D64",
     modelPath: "/models/williams.glb",
+    championships: 9,
+    totalWins: 114,
     car: {
       chassis: "Williams carbon composite",
       engine: "Mercedes-AMG F1 M16 E Performance",
@@ -239,6 +255,8 @@ export const f1Teams2025: Record<string, TeamData> = {
     primaryColor: "#EE1D23",
     accentColor: "#000000",
     modelPath: "/models/haas.glb",
+    championships: 0,
+    totalWins: 0,
     car: {
       chassis: "Dallara carbon fibre",
       engine: "Ferrari 066/12",
@@ -268,6 +286,8 @@ export const f1Teams2025: Record<string, TeamData> = {
     primaryColor: "#52E252",
     accentColor: "#000000",
     modelPath: "/models/sauber.glb",
+    championships: 0,
+    totalWins: 1,
     car: {
       chassis: "Sauber carbon composite",
       engine: "Ferrari 066/12",
@@ -297,6 +317,8 @@ export const f1Teams2025: Record<string, TeamData> = {
     primaryColor: "#6692FF",
     accentColor: "#FFFFFF",
     modelPath: "/models/racing_bulls.glb",
+    championships: 0,
+    totalWins: 2,
     car: {
       chassis: "RB carbon composite",
       engine: "Honda RBPTH003",

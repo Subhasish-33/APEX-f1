@@ -6,6 +6,7 @@ import Footer from "@/components/Footer";
 import { SceneCanvas } from "@/components/SceneCanvas";
 import { OrchestrationProvider } from "@/context/OrchestrationContext";
 import { AudioEngine } from "@/components/AudioEngine";
+import { TelemetryHUD } from "@/components/TelemetryHUD";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -40,6 +41,7 @@ export default function RootLayout({
           </main>
           <SceneCanvas />
           <AudioEngine />
+          <TelemetryHUD />
           <Footer />
         </OrchestrationProvider>
       </body>

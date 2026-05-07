@@ -1,11 +1,25 @@
-import { getTeamColor } from "@/lib/constants/teams";
+"use client";
 
-export default function TeamColorBadge({ teamRef, className = "w-1 h-8" }: { teamRef: string; className?: string }) {
-  const color = getTeamColor(teamRef);
+import React from "react";
+
+interface TeamColorBadgeProps {
+  color: string;
+  label?: string;
+  className?: string;
+}
+
+export function TeamColorBadge({ color, label, className = "" }: TeamColorBadgeProps) {
   return (
-    <div 
-      className={`rounded-full ${className}`} 
-      style={{ backgroundColor: color }} 
-    />
+    <div className={`flex items-center gap-2 ${className}`}>
+      <div 
+        className="w-1.5 h-6 rounded-full" 
+        style={{ backgroundColor: color }} 
+      />
+      {label && (
+        <span className="text-[10px] font-black uppercase tracking-widest text-white/80">
+          {label}
+        </span>
+      )}
+    </div>
   );
 }
