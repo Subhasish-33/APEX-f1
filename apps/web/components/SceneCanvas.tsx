@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Canvas } from "@react-three/fiber";
-import { Precompute, View } from "@react-three/drei";
+import { Preload, View } from "@react-three/drei";
 
 /**
  * Singleton Canvas component that hosts the single WebGL context.
@@ -32,7 +32,7 @@ export function SceneCanvas() {
       eventSource={typeof document !== 'undefined' ? document.body : undefined}
     >
       <View.Port />
-      <Precompute />
+      <Preload all />
     </Canvas>
   );
 }
