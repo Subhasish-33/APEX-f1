@@ -10,6 +10,8 @@
   },
   "dependencies": {
     "@apex/types": "workspace:*",
+    "@types/howler": "^2.2.12",
+    "howler": "^2.2.4",
     "next": "16.2.4",
     "react": "19.2.4",
     "react-dom": "19.2.4",

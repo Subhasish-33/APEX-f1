@@ -4,6 +4,8 @@ import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { SceneCanvas } from "@/components/SceneCanvas";
+import { OrchestrationProvider } from "@/context/OrchestrationContext";
+import { AudioEngine } from "@/components/AudioEngine";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -31,12 +33,15 @@ export default function RootLayout({
       className={`${inter.variable} ${outfit.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-f1-dark text-white font-sans">
-        <Navbar />
-        <main className="flex-grow relative z-10">
-          {children}
-        </main>
-        <SceneCanvas />
-        <Footer />
+        <OrchestrationProvider>
+          <Navbar />
+          <main className="flex-grow relative z-10">
+            {children}
+          </main>
+          <SceneCanvas />
+          <AudioEngine />
+          <Footer />
+        </OrchestrationProvider>
       </body>
     </html>
   );

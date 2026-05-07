@@ -8,10 +8,13 @@ import {
   ContactShadows,
   CameraControls
 } from "@react-three/drei";
+import { motion, AnimatePresence } from "framer-motion";
 import { EffectComposer, Bloom } from "@react-three/postprocessing";
 import { CarModel } from "./CarModel";
 import { Hotspots, HotspotData } from "./Hotspots";
+import { SignatureExperience } from "./SignatureExperience";
 import { ErrorBoundary } from "../ErrorBoundary";
+import { useOrchestration } from "@/context/OrchestrationContext";
 import * as THREE from "three";
 
 interface CarViewer3DProps {
@@ -34,6 +37,7 @@ export const CarViewer3D = forwardRef<CarViewerHandle, CarViewer3DProps>(({
   onHotspotClick = () => {},
   className = ""
 }, ref) => {
+  const { focusId, step } = useOrchestration();
   const [isHovered, setIsHovered] = useState(false);
   const controlsRef = useRef<CameraControls>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -42,9 +46,9 @@ export const CarViewer3D = forwardRef<CarViewerHandle, CarViewer3DProps>(({
     focusOn: (position) => {
       if (controlsRef.current) {
         const [x, y, z] = position;
-        // Cinematic zoom to part
+        // Cinematic inertial zoom to part
         controlsRef.current.setLookAt(
-          x + 1.5, y + 0.8, z + 1.5, // Camera position
+          x + 1.2, y + 0.6, z + 1.2, // Camera position (Closer for detail)
           x, y, z,                  // Target
           true                      // Enable transition
         );
@@ -56,6 +60,9 @@ export const CarViewer3D = forwardRef<CarViewerHandle, CarViewer3DProps>(({
       }
     }
   }));
+
+  // Find active hotspot for dynamic lighting
+  const activeHotspot = hotspots.find(h => h.id === focusId);
 
   return (
     <div 
@@ -75,21 +82,46 @@ export const CarViewer3D = forwardRef<CarViewerHandle, CarViewer3DProps>(({
               minPolarAngle={Math.PI / 4}
               maxPolarAngle={Math.PI / 2}
               enableZoom={false}
+              dollySpeed={0.2}
+              truckSpeed={0.2}
+              draggingDamping={0.1}
             />
 
-            <ambientLight intensity={0.4} />
-            <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} intensity={1} castShadow />
+            <ambientLight intensity={focusId ? 0.2 : 0.4} />
+            <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} intensity={focusId ? 0.5 : 1} castShadow />
             
-            {/* Rim Light in Team Color - Selective Emphasis */}
-            <pointLight position={[0, 2, -4]} color={teamColor} intensity={1.2} />
+            {/* Dynamic Focal Point Light */}
+            <AnimatePresence>
+              {activeHotspot && (
+                <group position={activeHotspot.position as [number, number, number]}>
+                   <pointLight 
+                     color={teamColor} 
+                     intensity={step === "FOCUSED" ? 2 : 0.5} 
+                     distance={3}
+                     decay={2}
+                   />
+                </group>
+              )}
+            </AnimatePresence>
+
+            {/* General Rim Light */}
+            {!focusId && (
+              <pointLight position={[0, 2, -4]} color={teamColor} intensity={1.2} />
+            )}
 
             <group position={[0, -0.4, 0]}>
               <CarModel modelPath={modelPath} teamColor={teamColor} />
               
+              <SignatureExperience 
+                teamColor={teamColor} 
+                active={step === "FOCUSED"} 
+              />
+
               <Hotspots 
                 hotspots={hotspots} 
                 teamColor={teamColor} 
                 onHotspotClick={onHotspotClick} 
+                activeId={focusId}
               />
             </group>
 
@@ -107,7 +139,7 @@ export const CarViewer3D = forwardRef<CarViewerHandle, CarViewer3DProps>(({
               <Bloom 
                 luminanceThreshold={0.9} 
                 mipmapBlur 
-                intensity={0.5} 
+                intensity={focusId ? 0.8 : 0.5} 
                 radius={0.4} 
               />
             </EffectComposer>
