@@ -22,11 +22,12 @@ _connect_args: dict = {}
 if "supabase" in DATABASE_URL or "neon" in DATABASE_URL or "render" in DATABASE_URL:
     _connect_args["ssl"] = "require"
 
+# Supabase (PgBouncer) compatibility: disable prepared statement cache
+_connect_args["prepared_statement_cache_size"] = 0
+
 engine = create_async_engine(
     DATABASE_URL,
     echo=False,
-    # Supabase (PgBouncer) compatibility: disable prepared statement cache
-    prepared_statement_cache_size=0,
     # Connection pool tuning — keeps the number of active connections low
     # so Supabase free-tier connection limits are respected.
     pool_size=5,

@@ -61,12 +61,18 @@ def do_run_migrations(connection: Connection):
 
 
 async def run_migrations_online():
+    # Supabase (PgBouncer) compatibility: disable prepared statement cache
+    connect_args = {"prepared_statement_cache_size": 0}
+    
+    # Enable SSL for cloud DBs
+    if "supabase" in DATABASE_URL or "neon" in DATABASE_URL or "render" in DATABASE_URL:
+        connect_args["ssl"] = "require"
+
     connectable = async_engine_from_config(
         config.get_section(config.config_ini_section),
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
-        # Supabase (PgBouncer) compatibility: disable prepared statement cache
-        prepared_statement_cache_size=0,
+        connect_args=connect_args,
     )
     async with connectable.connect() as connection:
         await connection.run_sync(do_run_migrations)
