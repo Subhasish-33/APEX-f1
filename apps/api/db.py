@@ -25,6 +25,8 @@ if "supabase" in DATABASE_URL or "neon" in DATABASE_URL or "render" in DATABASE_
 engine = create_async_engine(
     DATABASE_URL,
     echo=False,
+    # Supabase (PgBouncer) compatibility: disable prepared statement cache
+    prepared_statement_cache_size=0,
     # Connection pool tuning — keeps the number of active connections low
     # so Supabase free-tier connection limits are respected.
     pool_size=5,
