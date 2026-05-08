@@ -4,6 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "dev:frontend": "bash scripts/dev/start_frontend.sh",
+    "dev:backend": "bash scripts/dev/start_backend.sh",
+    "dev:full": "bash scripts/dev/start_full.sh",
+    "infra:cleanup": "bash scripts/dev/cleanup.sh",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

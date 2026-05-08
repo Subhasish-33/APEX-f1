@@ -1,4 +1,8 @@
-# Dependencies
+# ==============================================================================
+# .gitignore — APEX-F1
+# ==============================================================================
+
+# ── Dependencies ──────────────────────────────────────────────────────────────
 node_modules/
 .venv/
 venv/
@@ -7,7 +11,7 @@ build/
 .next/
 out/
 
-# Python
+# ── Python ────────────────────────────────────────────────────────────────────
 __pycache__/
 *.py[cod]
 *$py.class
@@ -17,31 +21,58 @@ htmlcov/
 .mypy_cache/
 .tox/
 
-# Logs
+# ── Logs ──────────────────────────────────────────────────────────────────────
+# ingestion.log alone is 34MB — never commit this
 *.log
+ingestion.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
-# Environment
+# ── Environment & Secrets ─────────────────────────────────────────────────────
+# .env.example files are committed (they are safe templates).
+# Actual .env files with real credentials must NEVER be committed.
 .env
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
-*.env*
 
-# IDE
+# ── IDE ───────────────────────────────────────────────────────────────────────
 .vscode/
 .idea/
 .DS_Store
 *.swp
 *.swo
 
-# R3F / Graphics
+# ── R3F / Graphics ────────────────────────────────────────────────────────────
 *.cache
 *.glsl.js
 
-# ML
+# ── ML Artifacts ─────────────────────────────────────────────────────────────
+# model.pkl is tracked intentionally (inference artifact, kept small).
+# Add it back with: git add -f apps/api/ml/model.pkl
+# Exclude training artifacts and large dataset caches.
+*.joblib
+*.h5
+*.onnx
+optuna_study.db
+ml_cache/
 .ipynb_checkpoints
+
+# ── Large Data & Telemetry ────────────────────────────────────────────────────
+# Raw CSVs and telemetry dumps should live in Supabase Storage / R2, not git.
+*.csv
+telemetry/
+replay_dumps/
+race_data_cache/
+
+# ── Scratch / Temp ────────────────────────────────────────────────────────────
+# scratch/ directory is for local exploration scripts, not production code.
+scratch/
+
+# ── FastF1 Cache ──────────────────────────────────────────────────────────────
+# FastF1 caches race telemetry locally — can be hundreds of MB.
+fastf1_cache/
+ff1_cache/

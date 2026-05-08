@@ -1,0 +1,57 @@
+# ==============================================================================
+# docker-compose.local.yml — LOCAL EMERGENCY FALLBACK ONLY
+# ==============================================================================
+#
+# ⚠️  DO NOT USE THIS FOR NORMAL DEVELOPMENT
+#
+# This file exists as an emergency fallback in case Supabase or Upstash are
+# unavailable. Running Docker Desktop on a MacBook Air causes:
+#   - Excessive CPU load (hypervisor overhead)
+#   - Disk thrashing (volume bind mounts)
+#   - Memory pressure (VM + container RAM)
+#   - Terminal instability
+#
+# NORMAL DEVELOPMENT:
+#   - Database → Supabase (free tier, zero local resources)
+#   - Redis    → Upstash  (free tier, zero local resources)
+#   - See DEVELOPMENT.md for setup instructions.
+#
+# USAGE (emergency only):
+#   docker compose -f docker-compose.local.yml up -d
+# ==============================================================================
+
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: apex_postgres_local
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: apex_f1
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data_local:/var/lib/postgresql/data
+    # Limit resource usage so it doesn't eat the whole machine
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 512M
+
+  redis:
+    image: redis:7-alpine   # alpine = smaller footprint
+    container_name: apex_redis_local
+    ports:
+      - "6379:6379"
+    command: redis-server --maxmemory 128mb --maxmemory-policy allkeys-lru
+    deploy:
+      resources:
+        limits:
+          cpus: "0.2"
+          memory: 160M
+
+volumes:
+  postgres_data_local:
