@@ -22,8 +22,8 @@ _connect_args: dict = {}
 if "supabase" in DATABASE_URL or "neon" in DATABASE_URL or "render" in DATABASE_URL:
     _connect_args["ssl"] = "require"
 
-# Supabase (PgBouncer) compatibility: disable prepared statement cache
-_connect_args["prepared_statement_cache_size"] = 0
+# Supabase (PgBouncer) compatibility: asyncpg's correct parameter is 'statement_cache_size'
+_connect_args["statement_cache_size"] = 0
 
 engine = create_async_engine(
     DATABASE_URL,

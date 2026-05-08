@@ -61,8 +61,8 @@ def do_run_migrations(connection: Connection):
 
 
 async def run_migrations_online():
-    # Supabase (PgBouncer) compatibility: disable prepared statement cache
-    connect_args = {"prepared_statement_cache_size": 0}
+    # Supabase (PgBouncer) compatibility: asyncpg's correct parameter is 'statement_cache_size'
+    connect_args = {"statement_cache_size": 0}
     
     # Enable SSL for cloud DBs
     if "supabase" in DATABASE_URL or "neon" in DATABASE_URL or "render" in DATABASE_URL:
