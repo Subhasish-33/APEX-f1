@@ -7,6 +7,8 @@ import { SceneCanvas } from "@/components/SceneCanvas";
 import { OrchestrationProvider } from "@/context/OrchestrationContext";
 import { AudioEngine } from "@/components/AudioEngine";
 import { TelemetryHUD } from "@/components/TelemetryHUD";
+import { OmniSearchCortex } from "@/components/Search/OmniSearchCortex";
+import { Analytics } from "@vercel/analytics/react";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -43,6 +45,8 @@ export default function RootLayout({
           <AudioEngine />
           <TelemetryHUD />
           <Footer />
+          <OmniSearchCortex />
+          <Analytics />
         </OrchestrationProvider>
       </body>
     </html>

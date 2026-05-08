@@ -38,6 +38,15 @@ class Circuit(Base):
     name = Column(String)
     location = Column(String)
     country = Column(String)
+    
+    # Circuit Personality Metadata
+    overtaking_difficulty = Column(Float) # 1-10
+    downforce_level = Column(String) # LOW, MED, HIGH
+    tire_degradation = Column(String) # LOW, MED, HIGH
+    weather_volatility = Column(Float) # 0-1
+    safety_car_probability = Column(Float) # 0-1
+    top_speed_level = Column(String) # LOW, MED, HIGH
+    atmosphere_description = Column(String)
 
 class Season(Base):
     __tablename__ = "seasons"
@@ -53,7 +62,19 @@ class Race(Base):
     circuit_id = Column(String, ForeignKey("circuits.circuit_id"))
     name = Column(String)
     date = Column(Date)
+    laps = Column(Integer)
+    
+    # Session Timestamps
+    fp1_date = Column(DateTime)
+    fp2_date = Column(DateTime)
+    fp3_date = Column(DateTime)
+    qualifying_date = Column(DateTime)
+    sprint_date = Column(DateTime)
+    
+    # Analytics
+    analytics = Column(JSON) # {overtaking_index: 0.8, chaos_prob: 0.2, etc.}
 
+    circuit = relationship("Circuit")
     results = relationship("Result", back_populates="race")
     driver_standings = relationship("DriverStanding", back_populates="race")
     constructor_standings = relationship("ConstructorStanding", back_populates="race")
@@ -70,6 +91,11 @@ class Result(Base):
     grid = Column(Integer)
     position = Column(Integer)
     points = Column(Float)
+    time = Column(String)
+    milliseconds = Column(Integer)
+    fastest_lap = Column(Integer)
+    fastest_lap_time = Column(String)
+    status = Column(String)
 
     __table_args__ = (UniqueConstraint("race_id", "driver_id", name="uq_race_driver_result"),)
 
@@ -115,6 +141,9 @@ class Qualifying(Base):
     driver_id = Column(Integer, ForeignKey("drivers.driver_id"))
     constructor_id = Column(Integer, ForeignKey("constructors.constructor_id"))
     position = Column(Integer)
+    q1 = Column(String)
+    q2 = Column(String)
+    q3 = Column(String)
 
     __table_args__ = (UniqueConstraint("race_id", "driver_id", name="uq_race_driver_qualifying"),)
 
@@ -138,7 +167,24 @@ class PitStop(Base):
     race = relationship("Race", back_populates="pit_stops")
     driver = relationship("Driver", back_populates="pit_stops")
 
+class LapTime(Base):
+    __tablename__ = "lap_times"
+
+    id = Column(Integer, primary_key=True)
+    race_id = Column(Integer, ForeignKey("races.race_id"))
+    driver_id = Column(Integer, ForeignKey("drivers.driver_id"))
+    lap = Column(Integer)
+    position = Column(Integer)
+    time = Column(String)
+    milliseconds = Column(Integer)
+
+    __table_args__ = (UniqueConstraint("race_id", "driver_id", "lap", name="uq_race_driver_lap"),)
+
+    race = relationship("Race")
+    driver = relationship("Driver")
+
 # --- AI Prediction Layer ---
+
 
 class PredictionRun(Base):
     __tablename__ = "prediction_runs"
@@ -206,3 +252,37 @@ class Telemetry(Base):
     speed_trap = Column(Float)
     weather_temp = Column(Float)
     track_temp = Column(Float)
+class RaceMoment(Base):
+    __tablename__ = "race_moments"
+
+    id = Column(Integer, primary_key=True)
+    race_id = Column(Integer, ForeignKey("races.race_id"))
+    lap = Column(Integer)
+    driver_id = Column(Integer, ForeignKey("drivers.driver_id"), nullable=True)
+    moment_type = Column(String) # OVERTAKE, PIT_STOP, SAFETY_CAR, FASTEST_LAP, RETIREMENT, STRATEGY_PIVOT
+    description = Column(String)
+    metadata_json = Column(JSON) # {gained_pos: 2, stint_compound: 'HARD', etc.}
+
+    race = relationship("Race", back_populates="moments")
+    driver = relationship("Driver")
+
+# Update Race relationship
+Race.moments = relationship("RaceMoment", back_populates="race")
+
+class MLFeature(Base):
+    __tablename__ = "ml_features"
+
+    id = Column(Integer, primary_key=True)
+    race_id = Column(Integer, ForeignKey("races.race_id"))
+    driver_id = Column(Integer, ForeignKey("drivers.driver_id"))
+    feature_vector = Column(JSON) # JSONB in Postgres, using JSON here for generic SQLAlchemy
+    feature_version = Column(String)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    source_hash = Column(String)
+    validation_status = Column(String) # VALID, IMPUTED, REJECTED
+    confidence_metadata = Column(JSON)
+
+    __table_args__ = (UniqueConstraint("race_id", "driver_id", "feature_version", name="uq_race_driver_feature_version"),)
+
+    race = relationship("Race")
+    driver = relationship("Driver")

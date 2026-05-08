@@ -4,9 +4,10 @@ from sqlalchemy.orm import selectinload
 from typing import Annotated
 from sqlalchemy import select, func
 from apps.api.dependencies import get_db
-from apps.api.models import Race, DriverStanding, ConstructorStanding
-from apps.api.schemas import RaceResponse, DriverStandingResponse, ConstructorStandingResponse, PaginatedResponse
+from apps.api.models import Race, DriverStanding, ConstructorStanding, Driver
+from apps.api.schemas import RaceResponse, DriverStandingResponse, ConstructorStandingResponse, PaginatedResponse, SeasonIntelligenceResponse
 from apps.api.cache import cached
+from apps.api.analytics.intelligence_engine import PsychologicalEngine
 
 router = APIRouter()
 
@@ -27,7 +28,14 @@ async def get_season_races(
         select(func.count()).select_from(Race).where(Race.year == year)
     )
 
-    stmt = select(Race).where(Race.year == year).order_by(Race.round).offset(offset).limit(limit)
+    stmt = (
+        select(Race)
+        .where(Race.year == year)
+        .options(selectinload(Race.circuit))
+        .order_by(Race.round)
+        .offset(offset)
+        .limit(limit)
+    )
     result = await session.execute(stmt)
     races = result.scalars().all()
 
@@ -111,3 +119,38 @@ async def get_season_constructor_standings(
     standings = result.scalars().all()
 
     return {"total_count": total_count, "page": page, "limit": limit, "data": standings}
+
+
+@router.get("/seasons/{year}/intelligence", response_model=SeasonIntelligenceResponse)
+@cached(ttl=3600, key_prefix="season_intelligence")
+async def get_season_intelligence(year: int, session: DBSession):
+    engine = PsychologicalEngine(session)
+    
+    volatility = await engine.calculate_volatility(year)
+    pressure = await engine.calculate_pressure_scores(year)
+    rivalries = await engine.detect_rivalries(year)
+    
+    # Identify Season DNA (Simplified logic)
+    total_races = await session.scalar(select(func.count()).select_from(Race).where(Race.year == year))
+    avg_volatility = sum(volatility.values()) / len(volatility) if volatility else 0
+    
+    dna = "Technical Revolution"
+    if avg_volatility > 0.6: dna = "Chaos Era"
+    elif avg_volatility < 0.2: dna = "Dominance Era"
+    elif len(rivalries) > 3: dna = "Psychological Warfare"
+
+    # Tension Score calculation
+    tension = min(100, (avg_volatility * 100) + (len(rivalries) * 10))
+
+    return {
+        "year": year,
+        "dna": dna,
+        "tension_score": tension,
+        "volatility_index": volatility,
+        "pressure_map": pressure,
+        "rivalries": rivalries,
+        "storylines": [
+            f"The {dna} of {year} continues to unfold.",
+            f"High pressure detected for {len([p for p in pressure.values() if p > 80])} drivers."
+        ]
+    }

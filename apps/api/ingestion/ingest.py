@@ -175,6 +175,17 @@ async def ingest_circuits():
     logger.info(f"Circuits complete. Total: {len(items)}")
 
 async def ingest_races():
+    def parse_dt(d_str, t_str):
+        if not d_str: return None
+        try:
+            if t_str:
+                # Ergast times are usually "15:00:00Z" or "15:00:00"
+                t_str = t_str.replace("Z", "")
+                return datetime.strptime(f"{d_str} {t_str}", "%Y-%m-%d %H:%M:%S")
+            return datetime.strptime(d_str, "%Y-%m-%d")
+        except:
+            return None
+
     total_races = 0
     for year in range(2010, CURRENT_YEAR + 2):
         logger.info(f"Ingesting races for {year}...")
@@ -186,20 +197,40 @@ async def ingest_races():
         async with AsyncSession(engine) as s:
             for r in items:
                 race_id = int(r.get("round")) + int(r.get("season")) * 100
+                
+                # Session parsing
+                fp1 = r.get("FirstPractice", {})
+                fp2 = r.get("SecondPractice", {})
+                fp3 = r.get("ThirdPractice", {})
+                qual = r.get("Qualifying", {})
+                sprint = r.get("Sprint", {})
+
                 stmt = insert(Race).values(
                     race_id=race_id,
                     year=int(r.get("season")),
                     round=int(r.get("round")),
                     circuit_id=r.get("Circuit", {}).get("circuitId"),
                     name=r.get("raceName"),
-                    date=datetime.strptime(r.get("date"), "%Y-%m-%d").date()
+                    date=datetime.strptime(r.get("date"), "%Y-%m-%d").date(),
+                    laps=int(r.get("laps", 0)) if r.get("laps") else None,
+                    fp1_date=parse_dt(fp1.get("date"), fp1.get("time")),
+                    fp2_date=parse_dt(fp2.get("date"), fp2.get("time")),
+                    fp3_date=parse_dt(fp3.get("date"), fp3.get("time")),
+                    qualifying_date=parse_dt(qual.get("date"), qual.get("time")),
+                    sprint_date=parse_dt(sprint.get("date"), sprint.get("time")),
                 )
                 await s.execute(stmt.on_conflict_do_update(
                     index_elements=["race_id"],
                     set_={
                         "name": stmt.excluded.name,
                         "date": stmt.excluded.date,
-                        "circuit_id": stmt.excluded.circuit_id
+                        "circuit_id": stmt.excluded.circuit_id,
+                        "laps": stmt.excluded.laps,
+                        "fp1_date": stmt.excluded.fp1_date,
+                        "fp2_date": stmt.excluded.fp2_date,
+                        "fp3_date": stmt.excluded.fp3_date,
+                        "qualifying_date": stmt.excluded.qualifying_date,
+                        "sprint_date": stmt.excluded.sprint_date,
                     }
                 ))
                 total_races += 1
@@ -226,7 +257,12 @@ async def ingest_results():
                         constructor_id=c_id,
                         grid=int(res.get("grid", 0)),
                         position=int(res.get("position", 0)) if res.get("position", "").isdigit() else None,
-                        points=float(res.get("points", 0))
+                        points=float(res.get("points", 0)),
+                        time=res.get("Time", {}).get("time"),
+                        milliseconds=int(res.get("Time", {}).get("millis", 0)) if res.get("Time", {}).get("millis") else None,
+                        fastest_lap=int(res.get("FastestLap", {}).get("lap", 0)) if res.get("FastestLap", {}).get("lap") else None,
+                        fastest_lap_time=res.get("FastestLap", {}).get("Time", {}).get("time"),
+                        status=res.get("status")
                     )
                     await s.execute(stmt.on_conflict_do_update(
                         constraint="uq_race_driver_result",
@@ -234,7 +270,47 @@ async def ingest_results():
                             "grid": stmt.excluded.grid,
                             "position": stmt.excluded.position,
                             "points": stmt.excluded.points,
-                            "constructor_id": stmt.excluded.constructor_id
+                            "constructor_id": stmt.excluded.constructor_id,
+                            "time": stmt.excluded.time,
+                            "milliseconds": stmt.excluded.milliseconds,
+                            "fastest_lap": stmt.excluded.fastest_lap,
+                            "fastest_lap_time": stmt.excluded.fastest_lap_time,
+                            "status": stmt.excluded.status
+                        }
+                    ))
+            await s.commit()
+
+async def ingest_qualifying():
+    for year in range(2010, CURRENT_YEAR + 1):
+        logger.info(f"Ingesting qualifying for {year}...")
+        items = await fetch_all(f"{year}/qualifying.json", ["RaceTable", "Races"])
+        if not items: continue
+        
+        async with AsyncSession(engine) as s:
+            for r in items:
+                race_id = int(r.get("round")) + int(r.get("season")) * 100
+                for q in r.get("QualifyingResults", []):
+                    d_id = await get_driver_id(s, q.get("Driver", {}).get("driverId"))
+                    c_id = await get_constructor_id(s, q.get("Constructor", {}).get("constructorId"))
+                    if not d_id or not c_id: continue
+
+                    stmt = insert(Qualifying).values(
+                        race_id=race_id,
+                        driver_id=d_id,
+                        constructor_id=c_id,
+                        position=int(q.get("position", 0)),
+                        q1=q.get("Q1"),
+                        q2=q.get("Q2"),
+                        q3=q.get("Q3")
+                    )
+                    await s.execute(stmt.on_conflict_do_update(
+                        constraint="uq_race_driver_qualifying",
+                        set_={
+                            "position": stmt.excluded.position,
+                            "constructor_id": stmt.excluded.constructor_id,
+                            "q1": stmt.excluded.q1,
+                            "q2": stmt.excluded.q2,
+                            "q3": stmt.excluded.q3
                         }
                     ))
             await s.commit()
@@ -310,6 +386,7 @@ async def main():
     await ingest_circuits()
     await ingest_races()
     await ingest_results()
+    await ingest_qualifying()
     await ingest_driver_standings()
     await ingest_constructor_standings()
     await ingest_telemetry_mock()

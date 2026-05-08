@@ -20,8 +20,6 @@ TEAM_LOGO_SOURCES = {
 
 async def download_logo(session, id, url):
     output_path = OUTPUT_DIR / f"{id}.png"
-    if output_path.exists():
-        return
     
     async with session.get(url) as response:
         if response.status == 200:

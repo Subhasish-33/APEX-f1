@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { CarViewer3D } from "@/components/CarViewer3D";
 import { f1Teams2025 } from "@/data/f1Teams2025";
 import Image from "next/image";
+import { useInView } from "react-intersection-observer";
 
 export function TeamsGrid() {
   const teams = Object.values(f1Teams2025);
@@ -23,7 +24,7 @@ export function TeamsGrid() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12">
           {teams.map((team, index) => (
             <TeamCard key={team.id} team={team} index={index} />
           ))}
@@ -34,14 +35,20 @@ export function TeamsGrid() {
 }
 
 function TeamCard({ team, index }: { team: any; index: number }) {
+  const [ref, inView] = useInView({
+    triggerOnce: true,
+    rootMargin: '200px 0px',
+  });
+
   return (
     <motion.div
+      ref={ref}
       initial={{ opacity: 0, scale: 0.95 }}
       whileInView={{ opacity: 1, scale: 1 }}
       transition={{ 
         duration: 0.8, 
         delay: index * 0.05,
-        ease: [0.16, 1, 0.3, 1] // Custom easeOutExpo
+        ease: [0.16, 1, 0.3, 1] 
       }}
       viewport={{ once: true, margin: "-100px" }}
     >
@@ -55,20 +62,35 @@ function TeamCard({ team, index }: { team: any; index: number }) {
           style={{ backgroundColor: team.primaryColor, boxShadow: `0 0 15px ${team.primaryColor}` }}
         />
 
-        {/* 3D Thumbnail */}
+        {/* 3D Thumbnail - Lazy Loaded */}
         <div className="h-40 relative bg-black/40">
-          <Suspense fallback={<div className="w-full h-full bg-white/5 animate-pulse" />}>
-            <CarViewer3D 
-              modelPath={team.modelPath} 
-              teamColor={team.primaryColor} 
-              hotspots={[]} // No hotspots in grid
-            />
-          </Suspense>
+          {inView ? (
+            <Suspense fallback={<div className="w-full h-full bg-white/5 animate-pulse" />}>
+              <CarViewer3D 
+                modelPath={team.modelPath} 
+                teamColor={team.primaryColor} 
+                hotspots={[]} 
+              />
+            </Suspense>
+          ) : (
+            <div className="w-full h-full flex items-center justify-center opacity-20">
+               <div className="w-12 h-12 rounded-full border-2 border-dashed border-white/10" />
+            </div>
+          )}
           
           {/* Logo Overlay */}
-          <div className="absolute top-4 right-4 w-8 h-8 opacity-40 group-hover:opacity-100 transition-opacity grayscale group-hover:grayscale-0">
-             {/* Using a placeholder for now, would be team.logoPath */}
-             <div className="w-full h-full rounded-full" style={{ backgroundColor: team.primaryColor }} />
+          <div className="absolute top-4 right-4 w-10 h-10 opacity-60 group-hover:opacity-100 transition-opacity bg-black/40 backdrop-blur-sm p-1.5 rounded-sm border border-white/10">
+             <Image 
+               src={`/assets/teams/${team.id}.png`} 
+               alt={`${team.shortName} Logo`}
+               width={40}
+               height={40}
+               className="object-contain w-full h-full grayscale group-hover:grayscale-0 transition-all"
+               onError={(e) => {
+                 // Fallback to team color circle if logo missing
+                 (e.target as any).style.display = 'none';
+               }}
+             />
           </div>
         </div>
 

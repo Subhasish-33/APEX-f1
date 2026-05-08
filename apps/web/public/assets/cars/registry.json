@@ -1,0 +1,12 @@
+{
+  "ferrari": "/assets/cars/ferrari.png",
+  "red_bull": "/assets/cars/red_bull.png",
+  "mercedes": "/assets/cars/mercedes.png",
+  "mclaren": "/assets/cars/mclaren.png",
+  "aston_martin": "/assets/cars/aston_martin.png",
+  "alpine": "/assets/cars/alpine.png",
+  "williams": "/assets/cars/williams.png",
+  "haas": "/assets/cars/haas.png",
+  "sauber": "/assets/cars/sauber.png",
+  "racing_bulls": "/assets/cars/racing_bulls.png"
+}

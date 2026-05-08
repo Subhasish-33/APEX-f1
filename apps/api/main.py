@@ -4,7 +4,7 @@ from sqlalchemy import text
 
 from apps.api.db import engine
 from apps.api.models import Base
-from apps.api.routes import drivers, constructors, circuits, seasons, races, predictions
+from apps.api.routes import drivers, constructors, circuits, seasons, races, predictions, analytics, search, simulation
 
 app = FastAPI(title="Apex F1 API", version="1.0")
 
@@ -16,10 +16,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+from apps.api.ml.engine import InferenceEngine
+
 @app.on_event("startup")
 async def startup():
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+        
+    # Initialize the ML Inference Engine globally
+    app.state.inference_engine = InferenceEngine()
+    app.state.inference_engine.initialize()
 
 @app.get("/")
 def root():
@@ -37,3 +43,6 @@ app.include_router(circuits.router, tags=["Circuits"])
 app.include_router(seasons.router, tags=["Seasons"])
 app.include_router(races.router, tags=["Races"])
 app.include_router(predictions.router)
+app.include_router(analytics.router, tags=["Analytics"])
+app.include_router(search.router, tags=["Search"])
+app.include_router(simulation.router)

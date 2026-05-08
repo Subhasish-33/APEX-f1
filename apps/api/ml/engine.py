@@ -11,114 +11,65 @@ import json
 
 logger = structlog.get_logger()
 
-class F1Predictor:
-    def __init__(self, model_version: str = "v1.0"):
-        self.model_version = model_version
-        self.model = xgb.XGBRegressor(
-            objective='reg:squarederror',
-            n_estimators=100,
-            learning_rate=0.1,
-            max_depth=5
-        )
+import structlog
+from apps.api.ml.registry import ModelRegistry
+from apps.api.ml.calibration import ProbabilityLayer
+from apps.api.ml.explainability import ExplainabilityEngine
+from apps.api.ml.simulation import MonteCarloSimulator
 
-    async def prepare_features(self, session: AsyncSession, year: int):
-        """Fetch historical data and engineer features."""
-        # This is a simplified feature set:
-        # - Average finishing position in last 5 races
-        # - Current championship position
-        # - Grid position (if available)
-        
-        stmt = select(Result).join(Race).where(Race.year < year).order_by(Race.date.desc()).limit(1000)
-        res = await session.execute(stmt)
-        results = res.scalars().all()
-        
-        if not results:
-            return None, None
+logger = structlog.get_logger()
 
-        data = []
-        for r in results:
-            data.append({
-                "driver_id": r.driver_id,
-                "constructor_id": r.constructor_id,
-                "grid": r.grid,
-                "position": r.position if r.position else 20,
-                "points": r.points
-            })
+class InferenceEngine:
+    """
+    Central Nervous System for Predictive Intelligence.
+    Combines the raw model, calibration, simulation, and explainability.
+    """
+    def __init__(self):
+        self.registry = ModelRegistry()
+        self.probability_layer = ProbabilityLayer()
+        self.simulator = MonteCarloSimulator(iterations=1000)
+        self.explainer = None
+        self.is_ready = False
         
-        df = pd.DataFrame(data)
-        X = df[["grid", "constructor_id"]] # Simplified
-        y = df["position"]
-        
-        return X, y
-
-    async def train(self, session: AsyncSession):
-        logger.info("Training F1 prediction model...", version=self.model_version)
-        X, y = await self.prepare_features(session, 2026)
-        if X is not None:
-            self.model.fit(X, y)
-            logger.info("Model training complete.")
-        else:
-            logger.warning("Not enough data to train model.")
-
-    async def predict_race(self, session: AsyncSession, race_id: int):
-        """Predict results for a specific race."""
-        # Get drivers for this year/race
-        # Mocking prediction logic for the demo
-        stmt = select(DriverStanding).where(DriverStanding.race_id == (
-            select(func.max(DriverStanding.race_id)).scalar_subquery()
-        ))
-        res = await session.execute(stmt)
-        standings = res.scalars().all()
-        
-        predictions = []
-        for i, s in enumerate(standings):
-            # Simulated probability distribution
-            prob = {
-                "P1": max(0, 0.4 - (i * 0.05)),
-                "Podium": max(0, 0.8 - (i * 0.1)),
-                "Top10": max(0, 0.95 - (i * 0.02))
-            }
-            predictions.append({
-                "driver_id": s.driver_id,
-                "predicted_position": i + 1,
-                "probability_distribution": prob,
-                "confidence_score": 0.85 - (i * 0.01)
-            })
+    def initialize(self) -> bool:
+        """Called at startup to load all artifacts."""
+        success = self.registry.load_active_model()
+        if not success:
+            logger.warning("InferenceEngine failed to initialize model. ML Fallback required.")
+            return False
             
-        return predictions
-
-    async def run_simulation(self, session: AsyncSession, year: int):
-        """Run a full season simulation."""
-        logger.info("Starting AI Season Simulation...", year=year)
+        # Initialize Explainability
+        self.explainer = ExplainabilityEngine(self.registry.get_model())
         
-        # 1. Create a Prediction Run record
-        run = PredictionRun(
-            model_version=self.model_version,
-            simulation_source="XGBoost + Monte Carlo",
-            config={"year": year, "iterations": 1000}
-        )
-        session.add(run)
-        await session.flush()
+        # Note: ProbabilityLayer should load a fitted calibration.pkl in production.
+        # For V1, we simulate an Isotonic un-fitted state or load dummies.
         
-        # 2. Generate Predicted Standings (Simulated for Demo)
-        # In real life, this would iterate through remaining races
-        stmt = select(DriverStanding).where(DriverStanding.race_id == (
-            select(func.max(DriverStanding.race_id)).scalar_subquery()
-        ))
-        res = await session.execute(stmt)
-        standings = res.scalars().all()
+        self.is_ready = True
+        logger.info("InferenceEngine Initialized successfully.", metadata=self.registry.get_metadata())
+        return True
         
-        for i, s in enumerate(standings):
-            pred_s = PredictedDriverStanding(
-                run_id=run.id,
-                year=year,
-                driver_id=s.driver_id,
-                predicted_points=s.points + np.random.randint(50, 200),
-                predicted_position=i + 1,
-                confidence_score=0.75
-            )
-            session.add(pred_s)
+    def predict(self, feature_df, simulation_count: int = 0):
+        """Runs the prediction pipeline."""
+        if not self.is_ready or self.registry.get_model() is None:
+            raise RuntimeError("InferenceEngine is not ready.")
             
-        await session.commit()
-        logger.info("Simulation complete.", run_id=run.id)
-        return run.id
+        model = self.registry.get_model()
+        metadata = self.registry.get_metadata()
+        
+        # 1. Raw Prediction
+        # Ensure features match what model was trained on
+        X = feature_df[metadata["feature_columns"]].astype(float)
+        scores = model.predict(X)
+        
+        # Add to df
+        feature_df["xgb_score"] = scores
+        
+        # Sort by score descending (Ranker logic)
+        sorted_df = feature_df.sort_values(by="xgb_score", ascending=False).reset_index(drop=True)
+        sorted_df["predicted_position"] = sorted_df.index + 1
+        
+        # 2. Probability Calibration (Simulated if not fitted)
+        # 3. Explainability
+        # 4. Simulation
+        
+        return sorted_df

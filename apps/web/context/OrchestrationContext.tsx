@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
 
-export type OrchestrationStep = "IDLE" | "CAMERA_MOVING" | "SETTLE" | "REVEAL" | "FOCUSED";
+export type OrchestrationStep = "IDLE" | "CAMERA_MOVING" | "SETTLE" | "REVEAL" | "FOCUSED" | "SUSPENSE" | "ERROR" | "RESOLVE";
 
 interface OrchestrationContextType {
   focusId: string | null;
@@ -10,8 +10,12 @@ interface OrchestrationContextType {
   audioEnabled: boolean;
   reducedMotion: boolean;
   setFocus: (id: string | null) => void;
+  setStep: (step: OrchestrationStep) => void;
   toggleAudio: () => void;
   toggleMotion: () => void;
+  triggerSuspense: () => void;
+  triggerError: () => void;
+  triggerResolve: () => void;
 }
 
 const OrchestrationContext = createContext<OrchestrationContextType | undefined>(undefined);
@@ -42,6 +46,10 @@ export function OrchestrationProvider({ children }: { children: React.ReactNode 
 
   const toggleAudio = () => setAudioEnabled(prev => !prev);
   const toggleMotion = () => setReducedMotion(prev => !prev);
+  
+  const triggerSuspense = useCallback(() => setStep("SUSPENSE"), []);
+  const triggerError = useCallback(() => setStep("ERROR"), []);
+  const triggerResolve = useCallback(() => setStep("RESOLVE"), []);
 
   return (
     <OrchestrationContext.Provider value={{ 
@@ -50,8 +58,12 @@ export function OrchestrationProvider({ children }: { children: React.ReactNode 
       audioEnabled, 
       reducedMotion,
       setFocus, 
+      setStep,
       toggleAudio,
-      toggleMotion 
+      toggleMotion,
+      triggerSuspense,
+      triggerError,
+      triggerResolve
     }}>
       {children}
     </OrchestrationContext.Provider>

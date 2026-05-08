@@ -19,6 +19,13 @@ export interface Circuit {
   name: string;
   location: string;
   country: string;
+  overtaking_difficulty?: number;
+  downforce_level?: string;
+  tire_degradation?: string;
+  weather_volatility?: number;
+  safety_car_probability?: number;
+  top_speed_level?: string;
+  atmosphere_description?: string;
 }
 
 export interface Race {
@@ -28,6 +35,19 @@ export interface Race {
   circuit_id: string;
   name: string;
   date: string;
+  laps?: number;
+  fp1_date?: string;
+  fp2_date?: string;
+  fp3_date?: string;
+  qualifying_date?: string;
+  sprint_date?: string;
+  analytics?: {
+    overtaking_index?: number;
+    chaos_prob?: number;
+    championship_significance?: number;
+    [key: string]: any;
+  };
+  circuit?: Circuit;
 }
 
 export interface Result {
@@ -38,6 +58,11 @@ export interface Result {
   grid: number;
   position?: number;
   points: number;
+  time?: string;
+  milliseconds?: number;
+  fastest_lap?: number;
+  fastest_lap_time?: string;
+  status?: string;
   driver?: Driver;
   constructor?: Constructor;
 }
@@ -67,6 +92,9 @@ export interface Qualifying {
   driver_id: number;
   constructor_id: number;
   position: number;
+  q1?: string;
+  q2?: string;
+  q3?: string;
   driver?: Driver;
   constructor?: Constructor;
 }
@@ -107,4 +135,36 @@ export interface Prediction {
   driver_id: number;
   probability: number;
   rank: number;
+}
+
+export interface Telemetry {
+  race_id: number;
+  driver_id: number;
+  lap_number: number;
+  sector1_time?: number;
+  sector2_time?: number;
+  sector3_time?: number;
+  lap_time?: number;
+  compound?: string;
+  tire_age?: number;
+  speed_trap?: number;
+  weather_temp?: number;
+  track_temp?: number;
+}
+
+export interface Rivalry {
+  driver_ids: number[];
+  intensity: number;
+  encounters: number;
+  driver_names?: string[];
+}
+
+export interface SeasonIntelligence {
+  year: number;
+  dna: string;
+  tension_score: number;
+  volatility_index: Record<number, number>;
+  pressure_map: Record<number, number>;
+  rivalries: Rivalry[];
+  storylines: string[];
 }

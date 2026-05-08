@@ -59,6 +59,7 @@ async function DriversGrid({ year }: { year: number }) {
               fill
               className="object-contain object-bottom transition-transform duration-500 group-hover:scale-110"
               sizes="(max-w-768px) 100vw, 25vw"
+              priority={entry.position <= 4}
             />
             <div className="absolute inset-0 bg-gradient-to-t from-f1-dark/80 to-transparent" />
           </div>

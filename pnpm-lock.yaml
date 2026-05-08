@@ -38,12 +38,30 @@ importers:
       '@apex/types':
         specifier: workspace:*
         version: link:../../packages/types
+      '@react-three/drei':
+        specifier: ^10.7.7
+        version: 10.7.7(@react-three/fiber@9.6.1(@types/react@19.2.14)(immer@11.1.7)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(three@0.184.0))(@types/react@19.2.14)(@types/three@0.184.1)(immer@11.1.7)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(three@0.184.0)
+      '@react-three/fiber':
+        specifier: ^9.6.1
+        version: 9.6.1(@types/react@19.2.14)(immer@11.1.7)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(three@0.184.0)
+      '@react-three/postprocessing':
+        specifier: ^3.0.4
+        version: 3.0.4(@react-three/fiber@9.6.1(@types/react@19.2.14)(immer@11.1.7)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(three@0.184.0))(@types/three@0.184.1)(react@19.2.4)(three@0.184.0)
       '@types/howler':
         specifier: ^2.2.12
         version: 2.2.12
+      '@vercel/analytics':
+        specifier: ^1.4.1
+        version: 1.6.1(next@16.2.4(@babel/core@7.29.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4)
+      framer-motion:
+        specifier: ^12.38.0
+        version: 12.38.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       howler:
         specifier: ^2.2.4
         version: 2.2.4
+      lucide-react:
+        specifier: ^1.14.0
+        version: 1.14.0(react@19.2.4)
       next:
         specifier: 16.2.4
         version: 16.2.4(@babel/core@7.29.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -53,9 +71,15 @@ importers:
       react-dom:
         specifier: 19.2.4
         version: 19.2.4(react@19.2.4)
+      react-intersection-observer:
+        specifier: ^10.0.3
+        version: 10.0.3(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       recharts:
         specifier: ^3.8.1
         version: 3.8.1(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react-is@17.0.2)(react@19.2.4)(redux@5.0.1)
+      three:
+        specifier: ^0.184.0
+        version: 0.184.0
     devDependencies:
       '@tailwindcss/postcss':
         specifier: ^4
@@ -1383,6 +1407,32 @@ packages:
     resolution: {integrity: sha512-Yy19y6O2GJq8f7CHf7L0nxL8bf4PZCPaVOCgJrusOeFHY1LvHgYXnmnXg6N5iwAnbgbZCDjo60SiM6IPJi9C5g==}
     peerDependencies:
       react: '>= 16.8.0'
+
+  '@vercel/analytics@1.6.1':
+    resolution: {integrity: sha512-oH9He/bEM+6oKlv3chWuOOcp8Y6fo6/PSro8hEkgCW3pu9/OiCXiUpRUogDh3Fs3LH2sosDrx8CxeOLBEE+afg==}
+    peerDependencies:
+      '@remix-run/react': ^2
+      '@sveltejs/kit': ^1 || ^2
+      next: '>= 13'
+      react: ^18 || ^19 || ^19.0.0-rc
+      svelte: '>= 4'
+      vue: ^3
+      vue-router: ^4
+    peerDependenciesMeta:
+      '@remix-run/react':
+        optional: true
+      '@sveltejs/kit':
+        optional: true
+      next:
+        optional: true
+      react:
+        optional: true
+      svelte:
+        optional: true
+      vue:
+        optional: true
+      vue-router:
+        optional: true
 
   '@vitejs/plugin-react@6.0.1':
     resolution: {integrity: sha512-l9X/E3cDb+xY3SWzlG1MOGt2usfEHGMNIaegaUGFsLkb3RCn/k8/TOXBcab+OndDI4TBtktT8/9BwwW8Vi9KUQ==}
@@ -2757,6 +2807,15 @@ packages:
     engines: {node: '>= 10.13'}
     peerDependencies:
       react: '>= 16.8'
+
+  react-intersection-observer@10.0.3:
+    resolution: {integrity: sha512-luICLMbs0zxTO/70Zy7K5jOXkABPEVSAF8T3FdZUlctsrIaPLmx8TZe2SSA+CY2HGWfz2INyNTnp82pxNNsShA==}
+    peerDependencies:
+      react: ^17.0.0 || ^18.0.0 || ^19.0.0
+      react-dom: ^17.0.0 || ^18.0.0 || ^19.0.0
+    peerDependenciesMeta:
+      react-dom:
+        optional: true
 
   react-is@16.13.1:
     resolution: {integrity: sha512-24e6ynE2H+OKt4kqsOvNd8kBpV65zoxbA4BVsEOB3ARVWQki/DHzaUoC5KuON/BiccDaCCTZBuOcfZs70kR8bQ==}
@@ -4495,6 +4554,11 @@ snapshots:
       '@use-gesture/core': 10.3.1
       react: 19.2.4
 
+  '@vercel/analytics@1.6.1(next@16.2.4(@babel/core@7.29.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4)':
+    optionalDependencies:
+      next: 16.2.4(@babel/core@7.29.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      react: 19.2.4
+
   '@vitejs/plugin-react@6.0.1(vite@8.0.11(@types/node@20.19.39)(jiti@2.7.0))':
     dependencies:
       '@rolldown/pluginutils': 1.0.0-rc.7
@@ -5989,6 +6053,12 @@ snapshots:
       file-selector: 0.5.0
       prop-types: 15.8.1
       react: 19.2.4
+
+  react-intersection-observer@10.0.3(react-dom@19.2.4(react@19.2.4))(react@19.2.4):
+    dependencies:
+      react: 19.2.4
+    optionalDependencies:
+      react-dom: 19.2.4(react@19.2.4)
 
   react-is@16.13.1: {}
 

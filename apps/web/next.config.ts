@@ -22,6 +22,10 @@ const nextConfig: NextConfig = {
   env: {
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001',
   },
+  devIndicators: {
+    appIsrStatus: false,
+    buildActivity: false,
+  },
 };
 
 export default nextConfig;
