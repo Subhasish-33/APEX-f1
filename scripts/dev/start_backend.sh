@@ -43,7 +43,7 @@ else
   echo "⚠️  No .venv found at $VENV_DIR. Using system Python."
 fi
 
-export PYTHONPATH="$REPO_ROOT:$PYTHONPATH"
+export PYTHONPATH="$REPO_ROOT:${PYTHONPATH:-}"
 
 cd "$REPO_ROOT"
 exec uvicorn apps.api.main:app \
