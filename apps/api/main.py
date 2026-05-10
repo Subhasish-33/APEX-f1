@@ -50,8 +50,12 @@ async def startup():
 
 
 @app.get("/")
-def root():
-    return {"message": "Apex F1 API", "version": "2.0.0"}
+async def root():
+    return {
+        "status": "ok",
+        "service": "APEX-F1 API",
+        "docs": "/docs"
+    }
 
 
 @app.get("/health")
