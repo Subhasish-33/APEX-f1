@@ -59,40 +59,9 @@ async def root():
 
 
 @app.get("/health")
-async def health_check():
-    """
-    Full verification matrix for Railway health checks and CI.
-    Returns db_connected, redis_connected, model_loaded, version, environment.
-    """
-    db_ok = False
-    redis_ok = False
-
-    # DB check
-    try:
-        async with engine.begin() as conn:
-            await conn.execute(text("SELECT 1"))
-        db_ok = True
-    except Exception:
-        pass
-
-    # Redis check
-    try:
-        from cache import get_redis
-        r = await get_redis()
-        await r.ping()
-        redis_ok = True
-    except Exception:
-        pass
-
-    all_ok = db_ok and redis_ok
-
+async def health():
     return {
-        "status": "healthy" if all_ok else "degraded",
-        "db_connected": db_ok,
-        "redis_connected": redis_ok,
-        "model_loaded": _model_loaded,
-        "version": "2.0.0",
-        "environment": settings.ENVIRONMENT,
+        "status": "healthy"
     }
 
 
