@@ -8,8 +8,12 @@ logger = structlog.get_logger()
 class ModelRegistry:
     """Handles active model selection, version tracking, and calibration artifacts."""
     
-    def __init__(self, models_dir: str = "apps/api/ml"):
-        self.models_dir = models_dir
+    def __init__(self, models_dir: str = None):
+        if models_dir is None:
+            # Default to the directory where this file resides
+            self.models_dir = os.path.dirname(os.path.abspath(__file__))
+        else:
+            self.models_dir = models_dir
         self.active_model = None
         self.metadata = None
         
