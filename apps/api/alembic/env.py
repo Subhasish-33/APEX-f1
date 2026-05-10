@@ -17,7 +17,7 @@ _repo_root = os.path.dirname(os.path.dirname(_api_root))     # apex-f1/
 if _repo_root not in sys.path:
     sys.path.insert(0, _repo_root)
 
-# Load .env from apps/api/ directory
+# Load .env from  directory
 try:
     from dotenv import load_dotenv
     load_dotenv(dotenv_path=os.path.join(_api_root, ".env"), override=True)
@@ -42,7 +42,7 @@ config.set_main_option("sqlalchemy.url", _url_for_config)
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-from apps.api.models import Base
+from models import Base
 target_metadata = Base.metadata
 
 

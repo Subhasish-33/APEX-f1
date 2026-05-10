@@ -1,21 +1,20 @@
-import { 
+import {
   Driver,
   Constructor,
-  Race, 
-  RaceDetail, 
-  DriverStanding, 
+  Race,
+  RaceDetail,
+  DriverStanding,
   ConstructorStanding,
   ConstructorHistoryEntry,
   PaginatedResponse,
-  Prediction
+  Prediction,
 } from "@apex/types";
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8001";
+import { API_BASE_URL, DEFAULT_REVALIDATE } from "@/lib/config";
 
 async function fetcher<T>(path: string, options?: RequestInit): Promise<T> {
   const res = await fetch(`${API_BASE_URL}${path}`, {
     ...options,
-    next: { revalidate: 3600 }, // Global cache for 1 hour
+    next: { revalidate: DEFAULT_REVALIDATE },
     headers: {
       "Content-Type": "application/json",
       ...options?.headers,

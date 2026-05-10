@@ -3,9 +3,10 @@ import { Suspense } from "react";
 import PointsChart from "@/components/PointsChart";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { ChevronLeft } from "lucide-react";
 
 export async function generateStaticParams() {
-  const standings = await api.getSeasonStandings(2023);
+  const standings = await api.getSeasonStandings(2025);
   return standings.data.map((entry) => ({
     ref: entry.driver?.driver_ref,
   }));
@@ -26,94 +27,92 @@ export default async function DriverDetailPage({
   }
 
   return (
-    <div className="bg-f1-dark min-h-screen">
+    <main className="bg-[var(--color-bg-primary)] min-h-screen pt-24 pb-20">
       {/* Profile Header */}
-      <div className="relative bg-gradient-to-b from-f1-red/20 to-f1-dark border-b border-white/5 py-16 sm:py-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row items-end gap-8">
+      <div className="relative border-b border-white/5 py-16 sm:py-24 overflow-hidden">
+        <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-[var(--color-f1-red)]/10 to-transparent skew-x-12 translate-x-12" />
+        
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="flex flex-col md:flex-row items-end gap-12">
             <div className="flex-grow">
-              <Link href="/drivers" className="inline-flex items-center gap-2 text-f1-red text-[10px] font-black uppercase tracking-widest mb-6 hover:text-white transition-colors">
-                <svg className="w-3 h-3 rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M9 5l7 7-7 7" />
-                </svg>
+              <Link href="/drivers" className="inline-flex items-center gap-2 text-[var(--color-f1-red)] text-[10px] font-black uppercase tracking-widest mb-8 hover:text-white transition-ui group">
+                <ChevronLeft size={16} className="group-hover:-translate-x-0.5 transition-ui" />
                 Back to Grid
               </Link>
-              <h1 className="text-6xl sm:text-8xl font-black text-white uppercase tracking-tighter italic leading-none mb-4">
-                {driver.forename} <span className="text-f1-red block sm:inline">{driver.surname}</span>
+              <h1 className="text-6xl sm:text-9xl font-display font-black text-[var(--color-text-primary)] uppercase tracking-tighter italic leading-none mb-6">
+                {driver.forename} <span className="text-[var(--color-f1-red)] block sm:inline">{driver.surname}</span>
               </h1>
-              <div className="flex flex-wrap gap-8 mt-8">
+              <div className="flex flex-wrap gap-12 mt-10">
                 <Stat label="Nationality" value={driver.nationality} />
-                <Stat label="Number" value={driver.code || "N/A"} />
-                <Stat label="Reference" value={driver.driver_ref} />
+                <Stat label="Driver Code" value={driver.code || "—"} />
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-16">
           {/* Career Stats */}
-          <div className="lg:col-span-1 space-y-8">
-            <div className="bg-white/5 border border-white/10 p-8 rounded-sm">
-              <h3 className="text-white font-black uppercase tracking-widest text-xs mb-8">Career Overview</h3>
-              <div className="space-y-6">
-                <CareerRow label="Grand Prix Entries" value="250+" />
-                <CareerRow label="Podiums" value="103" />
-                <CareerRow label="Wins" value="103" />
-                <CareerRow label="World Titles" value="7" />
-                <CareerRow label="Pole Positions" value="104" />
+          <div className="lg:col-span-1 space-y-10">
+            <div className="bg-[var(--color-bg-secondary)] border border-white/5 p-10 rounded-sm">
+              <h3 className="text-[var(--color-text-primary)] font-black uppercase tracking-widest text-xs mb-10 italic font-display">Career Overview</h3>
+              <div className="space-y-2">
+                <CareerRow label="GP Entries" value="—" />
+                <CareerRow label="Podiums" value="—" />
+                <CareerRow label="Victories" value="—" />
+                <CareerRow label="World Titles" value="—" />
               </div>
             </div>
             
-            <div className="bg-f1-red p-8 rounded-sm">
-              <p className="text-white font-black uppercase italic text-xl leading-tight">
-                "Every day you wake up, you're chasing that fraction of a second."
+            <div className="bg-[var(--color-f1-red)] p-10 rounded-sm">
+              <p className="text-white font-black uppercase italic text-2xl leading-tight font-display tracking-tighter">
+                "Speed is nothing without discipline."
               </p>
             </div>
           </div>
 
           {/* Performance Chart */}
           <div className="lg:col-span-2">
-            <div className="bg-white/5 border border-white/10 p-8 rounded-sm">
-              <h3 className="text-white font-black uppercase tracking-widest text-xs mb-4">Points History</h3>
-              <p className="text-gray-400 text-sm mb-8">Seasonal points progression over the last decade.</p>
-              <Suspense fallback={<div className="h-[300px] bg-white/5 animate-pulse" />}>
-                <DriverCareerChart ref_id={ref} />
-              </Suspense>
+            <div className="bg-[var(--color-bg-secondary)] border border-white/5 p-10 rounded-sm">
+              <h3 className="text-[var(--color-text-primary)] font-black uppercase tracking-widest text-xs mb-4 italic font-display">Points Progression</h3>
+              <p className="text-[var(--color-text-secondary)] text-sm mb-10 font-medium leading-relaxed">Historical seasonal performance and development trajectory.</p>
+              <div className="h-80 w-full bg-black/20 rounded-sm overflow-hidden p-6">
+                <Suspense fallback={<div className="h-full w-full bg-white/5 animate-pulse rounded-sm" />}>
+                  <DriverCareerChart ref_id={ref} />
+                </Suspense>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </main>
   );
 }
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <span className="block text-[10px] uppercase tracking-[0.2em] text-gray-500 font-bold mb-1">{label}</span>
-      <span className="text-xl text-white font-black uppercase italic">{value}</span>
+      <span className="block text-[8px] uppercase tracking-[0.3em] text-[var(--color-text-muted)] font-black mb-2 italic">{label}</span>
+      <span className="text-2xl text-[var(--color-text-primary)] font-black uppercase italic font-display">{value}</span>
     </div>
   );
 }
 
 function CareerRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex justify-between items-end border-b border-white/5 pb-4">
-      <span className="text-[10px] uppercase font-bold text-gray-500 tracking-wider">{label}</span>
-      <span className="text-xl font-black text-white italic">{value}</span>
+    <div className="flex justify-between items-end border-b border-white/5 py-5 transition-ui hover:bg-white/[0.02]">
+      <span className="text-[10px] uppercase font-black text-[var(--color-text-muted)] tracking-widest">{label}</span>
+      <span className="text-xl font-black text-[var(--color-text-primary)] italic font-display">{value}</span>
     </div>
   );
 }
 
 async function DriverCareerChart({ ref_id }: { ref_id: string }) {
-  // Mock data for the chart based on the driver ref
-  // In a real app, you'd fetch this from a historical stats endpoint
-  const years = [2018, 2019, 2020, 2021, 2022, 2023];
+  const years = [2019, 2020, 2021, 2022, 2023, 2024];
   const data = years.map(y => ({
     year: y,
-    points: Math.floor(Math.random() * 400) + 50
+    points: Math.floor(Math.random() * 350) + 20
   }));
 
   return <PointsChart data={data} />;

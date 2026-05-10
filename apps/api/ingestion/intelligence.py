@@ -4,8 +4,8 @@ import httpx
 from datetime import datetime
 from sqlalchemy import select, insert, delete
 from sqlalchemy.ext.asyncio import AsyncSession
-from apps.api.db import engine
-from apps.api.models import Race, Result, Telemetry, RaceMoment, Driver
+from db import engine
+from models import Race, Result, Telemetry, RaceMoment, Driver
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

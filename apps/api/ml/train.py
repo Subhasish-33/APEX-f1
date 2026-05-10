@@ -9,9 +9,9 @@ from datetime import datetime
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 import structlog
-from apps.api.db import async_session
-from apps.api.models import MLFeature, Result, Race
-from apps.api.ml.features import LeakageAuditEngine
+from db import async_session
+from models import MLFeature, Result, Race
+from ml.features import LeakageAuditEngine
 from sklearn.metrics import ndcg_score
 
 logger = structlog.get_logger()

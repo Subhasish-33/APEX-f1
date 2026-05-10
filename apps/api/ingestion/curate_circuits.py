@@ -2,8 +2,8 @@ import asyncio
 import logging
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import update
-from apps.api.db import engine
-from apps.api.models import Circuit
+from db import engine
+from models import Circuit
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

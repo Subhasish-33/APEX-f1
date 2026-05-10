@@ -1,8 +1,7 @@
 "use client";
 
-import { PitStop, Result, Telemetry } from "@apex/types";
-import { motion } from "framer-motion";
-import { Timer, Zap, Activity } from "lucide-react";
+import { PitStop, Result } from "@apex/types";
+import { Timer, Activity } from "lucide-react";
 
 interface StrategyIntelligenceProps {
   pitStops: PitStop[];
@@ -79,17 +78,16 @@ function renderStints(stops: PitStop[], totalLaps: number) {
   stops.forEach((stop, idx) => {
     const stintLength = stop.lap - currentLap;
     stints.push(
-      <motion.div 
+    <div
         key={`stint-${idx}`}
-        initial={{ width: 0 }}
-        animate={{ width: `${(stintLength / totalLaps) * 100}%` }}
-        className={`h-full ${compounds[idx % 3]} opacity-80 hover:opacity-100 transition-opacity border-r border-black/20 relative group/stint`}
+        style={{ width: `${(stintLength / totalLaps) * 100}%`, backgroundColor: undefined }}
+        className={`h-full ${compounds[idx % 3]} opacity-80 hover:opacity-100 transition-ui border-r border-black/20 relative group/stint`}
       >
         <div className="absolute inset-0 bg-black/10 group-hover/stint:bg-transparent transition-colors" />
         <div className="hidden group-hover/stint:block absolute -top-8 left-1/2 -translate-x-1/2 bg-black px-2 py-1 rounded text-[8px] font-black text-white whitespace-nowrap z-50">
           STINT {idx + 1}: {stintLength} LAPS
         </div>
-      </motion.div>
+      </div>
     );
     currentLap = stop.lap;
   });
@@ -97,17 +95,16 @@ function renderStints(stops: PitStop[], totalLaps: number) {
   // Final Stint
   const finalStintLength = totalLaps - currentLap;
   stints.push(
-    <motion.div 
+    <div
       key="final-stint"
-      initial={{ width: 0 }}
-      animate={{ width: `${(finalStintLength / totalLaps) * 100}%` }}
+      style={{ width: `${(finalStintLength / totalLaps) * 100}%` }}
       className={`h-full ${compounds[stops.length % 3]} opacity-80 hover:opacity-100 border-r border-black/20 relative group/stint`}
     >
       <div className="absolute inset-0 bg-black/10 group-hover/stint:bg-transparent transition-colors" />
       <div className="hidden group-hover/stint:block absolute -top-8 left-1/2 -translate-x-1/2 bg-black px-2 py-1 rounded text-[8px] font-black text-white whitespace-nowrap z-50">
         FINAL: {finalStintLength} LAPS
       </div>
-    </motion.div>
+    </div>
   );
 
   return stints;

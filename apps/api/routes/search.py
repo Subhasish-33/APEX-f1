@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Annotated, List, Dict, Optional
-from apps.api.dependencies import get_db
-from apps.api.analytics.search_cortex import SearchCortex
+from dependencies import get_db
+from analytics.search_cortex import SearchCortex
 from pydantic import BaseModel
 
 router = APIRouter()

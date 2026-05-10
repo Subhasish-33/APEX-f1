@@ -7,10 +7,10 @@ from fastapi import APIRouter, Depends, HTTPException, status, Request
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
-from apps.api.db import get_db
-from apps.api.models import PredictedRaceResult, PredictedDriverStanding, PredictionRun, MLFeature, Result
-from apps.api.schemas import PredictionResponse, PredictionItem, PredictedDriverStandingResponse
-from apps.api.ml.context import PredictionContext
+from db import get_db
+from models import PredictedRaceResult, PredictedDriverStanding, PredictionRun, MLFeature, Result
+from schemas import PredictionResponse, PredictionItem, PredictedDriverStandingResponse
+from ml.context import PredictionContext
 from typing import List, Optional
 import redis.asyncio as redis
 import structlog
@@ -65,7 +65,7 @@ async def predict_race(req: RacePredictionRequest, request: Request, db: AsyncSe
         logger.warning("Redis unavailable. Proceeding without cache.", error=str(e))
         
     # Build Features
-    from apps.api.ml.features import FeatureBuilder
+    from ml.features import FeatureBuilder
     builder = FeatureBuilder(db)
     # Mocking fetching driver IDs
     driver_ids = [1, 2, 3, 4, 5] 

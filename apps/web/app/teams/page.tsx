@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import { api } from "@/lib/api";
 import Image from "next/image";
 import Link from "next/link";
-import TeamColorBadge from "@/components/TeamColorBadge";
+import { TeamColorBadge } from "@/components/TeamColorBadge";
 import { CardSkeleton } from "@/components/Skeleton";
 import SeasonSelector from "@/components/SeasonSelector";
 import { getTeamLogo } from "@/lib/constants/assets";

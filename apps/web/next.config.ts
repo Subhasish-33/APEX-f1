@@ -1,7 +1,17 @@
 import type { NextConfig } from "next";
+import withBundleAnalyzer from "@next/bundle-analyzer";
+
+const bundleAnalyzer = withBundleAnalyzer({
+  enabled: process.env.ANALYZE === "true",
+});
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+
+  // ── Turbopack (Next.js 16 default) ───────────────────────────────────────
+  // Empty config silences the webpack/turbopack conflict warning.
+  // The webpack config below is preserved for watch options only.
+  turbopack: {},
 
   // ── Image Optimization ────────────────────────────────────────────────────
   images: {
@@ -75,4 +85,4 @@ const nextConfig: NextConfig = {
   // productionBrowserSourceMaps: false,
 };
 
-export default nextConfig;
+export default bundleAnalyzer(nextConfig);

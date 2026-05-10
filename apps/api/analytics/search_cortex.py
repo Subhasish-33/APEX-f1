@@ -1,8 +1,8 @@
 from typing import List, Dict, Optional
 from sqlalchemy import select, func, or_
 from sqlalchemy.ext.asyncio import AsyncSession
-from apps.api.models import Driver, Constructor, Race, Result
-from apps.api.analytics.intelligence_engine import PsychologicalEngine
+from models import Driver, Constructor, Race, Result
+from analytics.intelligence_engine import PsychologicalEngine
 
 class SearchCortex:
     def __init__(self, session: AsyncSession):

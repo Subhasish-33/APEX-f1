@@ -3,8 +3,8 @@ import numpy as np
 import xgboost as xgb
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
-from apps.api.models import Result, DriverStanding, Race, PredictionRun, PredictedRaceResult, PredictedDriverStanding
-from apps.api.db import engine
+from models import Result, DriverStanding, Race, PredictionRun, PredictedRaceResult, PredictedDriverStanding
+from db import engine
 import structlog
 from datetime import datetime
 import json
@@ -12,10 +12,10 @@ import json
 logger = structlog.get_logger()
 
 import structlog
-from apps.api.ml.registry import ModelRegistry
-from apps.api.ml.calibration import ProbabilityLayer
-from apps.api.ml.explainability import ExplainabilityEngine
-from apps.api.ml.simulation import MonteCarloSimulator
+from ml.registry import ModelRegistry
+from ml.calibration import ProbabilityLayer
+from ml.explainability import ExplainabilityEngine
+from ml.simulation import MonteCarloSimulator
 
 logger = structlog.get_logger()
 
