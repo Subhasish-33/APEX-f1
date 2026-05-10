@@ -14,7 +14,6 @@ logger = structlog.get_logger()
 import structlog
 from ml.registry import ModelRegistry
 from ml.calibration import ProbabilityLayer
-from ml.explainability import ExplainabilityEngine
 from ml.simulation import MonteCarloSimulator
 
 logger = structlog.get_logger()
@@ -38,9 +37,6 @@ class InferenceEngine:
             logger.warning("InferenceEngine failed to initialize model. ML Fallback required.")
             return False
             
-        # Initialize Explainability
-        self.explainer = ExplainabilityEngine(self.registry.get_model())
-        
         # Note: ProbabilityLayer should load a fitted calibration.pkl in production.
         # For V1, we simulate an Isotonic un-fitted state or load dummies.
         
