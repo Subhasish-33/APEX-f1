@@ -1,22 +1,9 @@
-import pandas as pd
-import numpy as np
-import xgboost as xgb
-from sqlalchemy import select, func
-from sqlalchemy.ext.asyncio import AsyncSession
-from models import Result, DriverStanding, Race, PredictionRun, PredictedRaceResult, PredictedDriverStanding
-from db import engine
+import os
 import structlog
-from datetime import datetime
-import json
 
 logger = structlog.get_logger()
 
-import structlog
-from ml.registry import ModelRegistry
-from ml.calibration import ProbabilityLayer
-from ml.simulation import MonteCarloSimulator
-
-logger = structlog.get_logger()
+# Heavy ML imports moved inside InferenceEngine to reduce startup memory pressure
 
 class InferenceEngine:
     """
@@ -24,6 +11,10 @@ class InferenceEngine:
     Combines the raw model, calibration, simulation, and explainability.
     """
     def __init__(self):
+        from ml.registry import ModelRegistry
+        from ml.calibration import ProbabilityLayer
+        from ml.simulation import MonteCarloSimulator
+        
         self.registry = ModelRegistry()
         self.probability_layer = ProbabilityLayer()
         self.simulator = MonteCarloSimulator(iterations=1000)
@@ -46,6 +37,7 @@ class InferenceEngine:
         
     def predict(self, feature_df, simulation_count: int = 0):
         """Runs the prediction pipeline."""
+        import pandas as pd
         if not self.is_ready or self.registry.get_model() is None:
             raise RuntimeError("InferenceEngine is not ready.")
             
