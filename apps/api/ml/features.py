@@ -5,9 +5,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_, or_
 from datetime import datetime
 import structlog
-from apps.api.models import Race, Result, Driver, Constructor, Qualifying, DriverStanding
-from apps.api.ml.regimes import get_regime_for_year, calculate_temporal_decay
-from apps.api.ml.validation import FeatureValidator
+from models import Race, Result, Driver, Constructor, Qualifying, DriverStanding
+from ml.regimes import get_regime_for_year, calculate_temporal_decay
+from ml.validation import FeatureValidator
 
 logger = structlog.get_logger()
 

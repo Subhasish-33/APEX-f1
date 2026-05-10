@@ -2,10 +2,10 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Annotated
 from sqlalchemy import select, func
-from apps.api.dependencies import get_db
-from apps.api.models import Circuit
-from apps.api.schemas import CircuitResponse, PaginatedResponse
-from apps.api.cache import cached
+from dependencies import get_db
+from models import Circuit
+from schemas import CircuitResponse, PaginatedResponse
+from cache import cached
 
 router = APIRouter()
 

@@ -3,11 +3,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 from typing import Annotated
 from sqlalchemy import select, func
-from apps.api.dependencies import get_db
-from apps.api.models import Race, DriverStanding, ConstructorStanding, Driver
-from apps.api.schemas import RaceResponse, DriverStandingResponse, ConstructorStandingResponse, PaginatedResponse, SeasonIntelligenceResponse
-from apps.api.cache import cached
-from apps.api.analytics.intelligence_engine import PsychologicalEngine
+from dependencies import get_db
+from models import Race, DriverStanding, ConstructorStanding, Driver
+from schemas import RaceResponse, DriverStandingResponse, ConstructorStandingResponse, PaginatedResponse, SeasonIntelligenceResponse
+from cache import cached
+from analytics.intelligence_engine import PsychologicalEngine
 
 router = APIRouter()
 

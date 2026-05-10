@@ -1,7 +1,7 @@
 import numpy as np
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
-from apps.api.models import Race, DriverStanding, Result, Qualifying
+from models import Race, DriverStanding, Result, Qualifying
 from typing import List, Dict
 
 class PsychologicalEngine:

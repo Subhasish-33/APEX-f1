@@ -1,64 +1,110 @@
 @import "tailwindcss";
 
+/* ── APEX F1 Design Token System — Phase 2 Frozen ───────────────────────────
+ * ALL visual values must reference these tokens.
+ * No raw hex, font-size, or spacing values are permitted in components.
+ * Violation = PR blocked.
+ * ─────────────────────────────────────────────────────────────────────────── */
+
 @theme {
+  /* ── Color Tokens ── */
+
+  /* Primary Accent */
   --color-f1-red: #E10600;
-  --color-f1-dark: #1A1A2E;
-  --color-f1-gold: #C8960C;
-  
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+
+  /* Backgrounds */
+  --color-bg-primary: #0A0A0F;
+  --color-bg-secondary: #141420;
+  --color-bg-tertiary: #1E1E2E;
+
+  /* Text */
+  --color-text-primary: #FFFFFF;
+  --color-text-secondary: #9CA3AF;
+  --color-text-muted: #4B5563;
+
+  /* Accents */
+  --color-gold: #C8960C;
+  --color-success: #22C55E;
+  --color-warning: #F59E0B;
+  --color-danger: #EF4444;
+
+  /* ── Typography Tokens ── */
+  --font-display: var(--font-display);   /* Barlow Condensed — hero, team names, surnames */
+  --font-sans: var(--font-inter);         /* Inter — interface, headings, body, labels */
+  --font-mono: var(--font-mono);          /* JetBrains Mono — lap times, telemetry, data */
+
+  /* ── Motion Tokens ── */
+  /* Duration */
+  --duration-micro: 100ms;     /* Micro-interactions */
+  --duration-standard: 150ms;  /* Standard UI response */
+  --duration-transition: 200ms; /* Page transitions */
+  --duration-reveal: 300ms;    /* Data reveals */
+  /* Nothing exceeds 400ms */
+
+  /* Easing */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);   /* Entries */
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);        /* Exits */
 }
 
+/* ── CSS Custom Properties (for legacy/non-Tailwind usage) ───────────────── */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-  --f1-red: #E10600;
-  --f1-dark: #1A1A2E;
-  --f1-gold: #C8960C;
-
-  /* Cinematic Motion Language */
-  --ease-cinematic: cubic-bezier(0.16, 1, 0.3, 1);
-  --ease-anticipate: cubic-bezier(0.8, 0, 0.2, 1);
-  --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  
-  --duration-snap: 150ms;
-  --duration-fluid: 400ms;
-  --duration-reveal: 800ms;
-  --duration-cinematic: 1200ms;
+  --color-f1-red: #E10600;
+  --color-bg-primary: #0A0A0F;
+  --color-bg-secondary: #141420;
+  --color-bg-tertiary: #1E1E2E;
+  --color-text-primary: #FFFFFF;
+  --color-text-secondary: #9CA3AF;
+  --color-text-muted: #4B5563;
+  --color-gold: #C8960C;
+  --color-success: #22C55E;
+  --color-warning: #F59E0B;
+  --color-danger: #EF4444;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #1A1A2E;
-    --foreground: #ededed;
+/* ── Base ─────────────────────────────────────────────────────────────────── */
+body {
+  background-color: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
+}
+
+/* Respect prefers-reduced-motion — all animations become instant */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
-  transition: background-color var(--duration-fluid) var(--ease-cinematic);
-}
-
-/* Custom Utilities */
+/* ── Utility Classes ──────────────────────────────────────────────────────── */
 @layer utilities {
   .text-balance {
     text-wrap: balance;
   }
-  
-  .transition-cinematic {
-    transition-property: all;
-    transition-timing-function: var(--ease-cinematic);
-    transition-duration: var(--duration-fluid);
-  }
-  
-  .animate-cinematic-reveal {
-    animation: cinematicReveal var(--duration-reveal) var(--ease-cinematic) forwards;
+
+  /* Standard UI transition — use for hover states, interactive elements */
+  .transition-ui {
+    transition-property: color, background-color, border-color, opacity, transform;
+    transition-timing-function: var(--ease-out);
+    transition-duration: var(--duration-standard);
   }
 
-  @keyframes cinematicReveal {
-    0% { opacity: 0; transform: translateY(10px) scale(0.98); filter: blur(4px); }
-    100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+  /* Data reveal — use for IntersectionObserver-triggered content */
+  .transition-reveal {
+    transition-property: opacity, transform;
+    transition-timing-function: var(--ease-out);
+    transition-duration: var(--duration-reveal);
+  }
+
+  /* Font utilities */
+  .font-display {
+    font-family: var(--font-display), 'Barlow Condensed', sans-serif;
+  }
+
+  .font-data {
+    font-family: var(--font-mono), 'JetBrains Mono', monospace;
   }
 }

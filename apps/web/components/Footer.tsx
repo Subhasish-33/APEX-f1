@@ -1,39 +1,39 @@
 export default function Footer() {
   return (
-    <footer className="bg-f1-dark border-t border-gray-800 pt-12 pb-8">
+    <footer className="bg-[var(--color-bg-primary)] border-t border-white/5 pt-16 pb-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          <div className="col-span-1 md:col-span-2">
-            <span className="text-f1-red font-black text-3xl tracking-tighter">
-              APEX<span className="text-white">F1</span>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
+          <div className="col-span-1 md:col-span-2 space-y-6">
+            <span className="text-[var(--color-f1-red)] font-display font-black text-4xl tracking-tighter italic">
+              APEX<span className="text-[var(--color-text-primary)]">F1</span>
             </span>
-            <p className="mt-4 text-gray-400 max-w-xs">
-              The ultimate Formula 1 data analytics and prediction platform. 
-              Real-time insights, historical archives, and AI-powered race simulations.
+            <p className="text-[var(--color-text-secondary)] max-w-sm text-sm leading-relaxed">
+              The production-grade Formula 1 data foundation. 
+              Real-time analytics, historical archives, and performance intelligence for the modern era.
             </p>
           </div>
           <div>
-            <h3 className="text-white font-bold uppercase tracking-wider text-sm">Platform</h3>
-            <ul className="mt-4 space-y-2 text-gray-400 text-sm">
-              <li>Drivers</li>
-              <li>Teams</li>
-              <li>Calendar</li>
-              <li>Standings</li>
+            <h3 className="text-[var(--color-text-primary)] font-black uppercase tracking-widest text-xs mb-6 italic">Platform</h3>
+            <ul className="space-y-3 text-[var(--color-text-muted)] text-[10px] font-bold uppercase tracking-wider">
+              <li className="hover:text-[var(--color-f1-red)] transition-ui cursor-pointer">Drivers</li>
+              <li className="hover:text-[var(--color-f1-red)] transition-ui cursor-pointer">Teams</li>
+              <li className="hover:text-[var(--color-f1-red)] transition-ui cursor-pointer">Calendar</li>
+              <li className="hover:text-[var(--color-f1-red)] transition-ui cursor-pointer">Standings</li>
             </ul>
           </div>
           <div>
-            <h3 className="text-white font-bold uppercase tracking-wider text-sm">Data</h3>
-            <ul className="mt-4 space-y-2 text-gray-400 text-sm">
-              <li>Historical API</li>
-              <li>Predictions</li>
-              <li>Pit Telemetry</li>
-              <li>Circuit Data</li>
+            <h3 className="text-[var(--color-text-primary)] font-black uppercase tracking-widest text-xs mb-6 italic">Data Core</h3>
+            <ul className="space-y-3 text-[var(--color-text-muted)] text-[10px] font-bold uppercase tracking-wider">
+              <li className="hover:text-[var(--color-f1-red)] transition-ui cursor-pointer">Historical API</li>
+              <li className="hover:text-[var(--color-f1-red)] transition-ui cursor-pointer">Predictions</li>
+              <li className="hover:text-[var(--color-f1-red)] transition-ui cursor-pointer">Pit Telemetry</li>
+              <li className="hover:text-[var(--color-f1-red)] transition-ui cursor-pointer">Circuit DNA</li>
             </ul>
           </div>
         </div>
-        <div className="mt-12 pt-8 border-t border-gray-900 text-center text-gray-500 text-xs">
-          <p>&copy; {new Date().getFullYear()} APEX F1 Analytics. All rights reserved.</p>
-          <p className="mt-1 italic">This site is unofficial and is not associated in any way with the Formula 1 companies.</p>
+        <div className="mt-16 pt-8 border-t border-white/5 text-center text-[var(--color-text-muted)] text-[8px] font-bold uppercase tracking-[0.2em]">
+          <p>&copy; {new Date().getFullYear()} APEX F1 FOUNDATION. ALL RIGHTS RESERVED.</p>
+          <p className="mt-2 italic opacity-50">THIS SITE IS UNOFFICIAL AND IS NOT ASSOCIATED IN ANY WAY WITH THE FORMULA 1 COMPANIES.</p>
         </div>
       </div>
     </footer>

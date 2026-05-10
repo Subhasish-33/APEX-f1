@@ -4,8 +4,8 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../')))
 
 from sqlalchemy import select, func
-from apps.api.db import async_session
-from apps.api.models import Race, Result, DriverStanding, Telemetry
+from db import async_session
+from models import Race, Result, DriverStanding, Telemetry
 import structlog
 
 logger = structlog.get_logger()

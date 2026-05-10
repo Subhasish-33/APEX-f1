@@ -1,9 +1,16 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { Telemetry, Driver } from "@apex/types";
-import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, Legend } from "recharts";
-import { motion } from "framer-motion";
 import { Activity } from "lucide-react";
+
+// ── Recharts loaded only on client, never SSR ─────────────────────────────
+const ResponsiveContainer = dynamic(() => import("recharts").then((m) => m.ResponsiveContainer), { ssr: false });
+const LineChart = dynamic(() => import("recharts").then((m) => m.LineChart), { ssr: false });
+const Line = dynamic(() => import("recharts").then((m) => m.Line), { ssr: false });
+const XAxis = dynamic(() => import("recharts").then((m) => m.XAxis), { ssr: false });
+const YAxis = dynamic(() => import("recharts").then((m) => m.YAxis), { ssr: false });
+const Tooltip = dynamic(() => import("recharts").then((m) => m.Tooltip), { ssr: false });
 
 interface PositionTraceProps {
   telemetry: Telemetry[];
@@ -40,7 +47,7 @@ export function PositionTrace({ telemetry, drivers, currentLap }: PositionTraceP
       <div className="flex items-center justify-between mb-8 relative z-10">
         <div>
           <h3 className="text-xl font-black flex items-center gap-2 italic uppercase">
-            <Activity className="text-f1-red animate-pulse" />
+            <Activity className="text-[var(--color-f1-red)]" />
             Position Evolution Trace
           </h3>
           <p className="text-[10px] font-bold text-white/30 uppercase tracking-[0.3em] mt-1">Real-time Order Oscillation</p>
@@ -89,10 +96,11 @@ export function PositionTrace({ telemetry, drivers, currentLap }: PositionTraceP
   );
 }
 
-function getPositionFromLap(telemetry: Telemetry[], lap: number, driverId: number) {
-  // This is a simplification; in a real app, position would be in telemetry
-  // Here we'll simulate it based on lap times or just use a mock for demo
-  return Math.floor(Math.random() * 20) + 1; // Mocked for now to show the trace
+function getPositionFromLap(telemetry: Telemetry[], lap: number, driverId: number): number | null {
+  // Return null if position data is not available in telemetry.
+  // PositionTrace requires real telemetry with position data — no mock values.
+  const entry = telemetry.find((t) => t.lap_number === lap && t.driver_id === driverId);
+  return entry?.position ?? null;
 }
 
 function getDriverColor(code: string) {

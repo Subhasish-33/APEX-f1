@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends, Query, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Annotated, List, Dict
-from apps.api.dependencies import get_db
-from apps.api.analytics.intelligence_engine import PsychologicalEngine
-from apps.api.models import Driver
+from dependencies import get_db
+from analytics.intelligence_engine import PsychologicalEngine
+from models import Driver
 from sqlalchemy import select
 from pydantic import BaseModel
 

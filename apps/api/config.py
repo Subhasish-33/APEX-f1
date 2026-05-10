@@ -5,7 +5,7 @@ All environment variables are declared here via pydantic-settings.
 The app MUST fail fast on startup if required variables are missing.
 
 Usage:
-    from apps.api.config import get_settings
+    from config import get_settings
     settings = get_settings()
 """
 

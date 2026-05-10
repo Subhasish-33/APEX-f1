@@ -3,7 +3,6 @@
 import { useState, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
 import { F1_DRIVERS_2025 } from "@/lib/constants/drivers";
 import { f1Teams2025 } from "@/data/f1Teams2025";
 import Image from "next/image";
@@ -24,8 +23,8 @@ export default function Navbar() {
   };
 
   return (
-    <nav 
-      className="bg-[#0a0a0f] border-b border-white/5 sticky top-0 z-[100]"
+    <nav
+      className="bg-[var(--color-bg-primary)] border-b border-white/5 sticky top-0 z-[100]"
       onMouseLeave={handleMouseLeave}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -76,19 +75,17 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* DROPDOWN MENU */}
-      <AnimatePresence>
-        {activeDropdown && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-            className="absolute left-0 right-0 bg-[#15151e] border-b border-white/5 shadow-2xl z-[90]"
-            onMouseEnter={() => {
-              if (timeoutRef.current) clearTimeout(timeoutRef.current);
-            }}
-          >
+      {/* DROPDOWN MENU — CSS transition, no Framer Motion */}
+      <div
+        className={`absolute left-0 right-0 bg-[var(--color-bg-secondary)] border-b border-white/5 shadow-2xl z-[90] transition-ui overflow-hidden ${
+          activeDropdown
+            ? "opacity-100 pointer-events-auto translate-y-0"
+            : "opacity-0 pointer-events-none -translate-y-2"
+        }`}
+        onMouseEnter={() => {
+          if (timeoutRef.current) clearTimeout(timeoutRef.current);
+        }}
+      >
             <div className="max-w-7xl mx-auto px-8 py-12">
               {activeDropdown === "drivers" ? (
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-12 gap-y-8">
@@ -169,9 +166,7 @@ export default function Navbar() {
                  </button>
               </div>
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      </div>
     </nav>
   );
 }

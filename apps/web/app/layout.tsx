@@ -1,28 +1,42 @@
 import type { Metadata } from "next";
-import { Inter, Outfit } from "next/font/google";
+import { Inter, Barlow_Condensed, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { SceneCanvas } from "@/components/SceneCanvas";
-import { OrchestrationProvider } from "@/context/OrchestrationContext";
-import { AudioEngine } from "@/components/AudioEngine";
-import { TelemetryHUD } from "@/components/TelemetryHUD";
-import { OmniSearchCortex } from "@/components/Search/OmniSearchCortex";
 import { Analytics } from "@vercel/analytics/react";
 
+// ── Typography — Phase 2 Frozen Spec ─────────────────────────────────────────
+// Display: Barlow Condensed (hero titles, team names, driver surnames)
+// Interface: Inter (headings, body, labels, nav)
+// Data: JetBrains Mono (lap times, telemetry, code values)
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
+  display: "swap",
 });
 
-const outfit = Outfit({
-  variable: "--font-outfit",
+const barlowCondensed = Barlow_Condensed({
+  variable: "--font-display",
+  weight: ["700", "900"],
   subsets: ["latin"],
+  display: "swap",
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  variable: "--font-mono",
+  subsets: ["latin"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "APEX F1 | Advanced Formula 1 Analytics",
-  description: "Real-time F1 data, historical archives, and AI-powered race predictions.",
+  title: "APEX F1 | Formula 1 Intelligence Platform",
+  description:
+    "All 10 teams, 20 drivers, full 2025 season calendar, race results back to 2010, live standings, and ML-backed race predictions.",
+  openGraph: {
+    title: "APEX F1 | Formula 1 Intelligence Platform",
+    description: "Real F1 data. ML predictions. Zero noise.",
+    type: "website",
+  },
 };
 
 export default function RootLayout({
@@ -33,21 +47,13 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${outfit.variable} h-full antialiased`}
+      className={`${inter.variable} ${barlowCondensed.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-f1-dark text-white font-sans">
-        <OrchestrationProvider>
-          <Navbar />
-          <main className="flex-grow relative z-10">
-            {children}
-          </main>
-          <SceneCanvas />
-          <AudioEngine />
-          <TelemetryHUD />
-          <Footer />
-          <OmniSearchCortex />
-          <Analytics />
-        </OrchestrationProvider>
+      <body className="min-h-full flex flex-col bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] font-sans">
+        <Navbar />
+        <main className="flex-grow relative z-10">{children}</main>
+        <Footer />
+        <Analytics />
       </body>
     </html>
   );

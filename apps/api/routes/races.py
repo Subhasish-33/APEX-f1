@@ -3,10 +3,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 from typing import Annotated, List
 from sqlalchemy import select
-from apps.api.dependencies import get_db
-from apps.api.models import Race, Result, Qualifying, PitStop, Telemetry, RaceMoment
-from apps.api.schemas import RaceDetailResponse, TelemetryResponse
-from apps.api.cache import cached
+from dependencies import get_db
+from models import Race, Result, Qualifying, PitStop, Telemetry, RaceMoment
+from schemas import RaceDetailResponse, TelemetryResponse
+from cache import cached
 
 router = APIRouter()
 

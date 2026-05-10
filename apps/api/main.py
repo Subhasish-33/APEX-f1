@@ -2,10 +2,10 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 
-from apps.api.config import get_settings
-from apps.api.db import engine
-from apps.api.models import Base
-from apps.api.routes import drivers, constructors, circuits, seasons, races, predictions, analytics, search
+from config import get_settings
+from db import engine
+from models import Base
+from routes import drivers, constructors, circuits, seasons, races, predictions, analytics, search
 
 settings = get_settings()
 
@@ -23,7 +23,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-from apps.api.ml.engine import InferenceEngine
+from ml.engine import InferenceEngine
 
 _model_loaded = False
 
@@ -73,7 +73,7 @@ async def health_check():
 
     # Redis check
     try:
-        from apps.api.cache import get_redis
+        from cache import get_redis
         r = await get_redis()
         await r.ping()
         redis_ok = True

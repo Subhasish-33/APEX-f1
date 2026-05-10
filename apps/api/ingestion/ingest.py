@@ -7,8 +7,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy import text
 
-from apps.api.db import engine, init_db
-from apps.api.models import *
+from db import engine, init_db
+from models import *
 
 # Configure logging
 logging.basicConfig(
