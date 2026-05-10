@@ -1,69 +1,282 @@
-# 🏎️ APEX-F1: Next-Gen Motorsport Intelligence Platform
+# APEX-F1
 
-APEX-F1 is a high-performance, production-grade motorsport analytics platform that harmonizes **verified historical race data** with **state-of-the-art AI simulations**. It features a cinematic 3D technical visualizer, real-time telemetry HUDs, and a robust predictive engine designed for the modern F1 enthusiast and data scientist.
+A modern Formula 1 platform focused on race data, standings, drivers, teams, schedules, telemetry playback, and predictive analytics.
 
-![APEX-F1 Preview](https://via.placeholder.com/1200x600/050505/ffffff?text=APEX-F1+INTELLIGENCE+PLATFORM)
+APEX-F1 combines a production-grade FastAPI backend with a high-performance Next.js frontend to deliver a fast, data-first motorsport experience inspired by the future of F1.
 
-## 🌟 Key Pillars
+---
 
-### 🧠 Race Intelligence Platform (Week 3 Milestone)
-- **Predictive Engine**: Proprietary ML models (XGBoost/Scikit-learn) trained on 20+ years of F1 data to forecast podium probabilities and race outcomes.
-- **Model Explainability**: Integrated SHAP-based feature importance to explain *why* the AI predicts a specific winner.
-- **Calibration & Monitoring**: Automated dataset health reporting and inference accuracy tracking.
+## Philosophy
 
-### 🎬 Cinematic Technical Visualizer
-- **High-Fidelity 3D Assets**: Interactive 2025-spec chassis models built with **React Three Fiber** and **Three.js**.
-- **Dynamic Camera Orchestration**: Smooth, context-aware transitions between technical hotspots (MGU-H, Power Unit, Aerodynamic surfaces).
-- **Telemetry HUD**: Real-time G-force, throttle, and brake pressure overlays integrated directly into the 3D viewport.
+APEX-F1 is no longer a “cinematic experiment.”
 
-### 🔌 Robust Data Pipeline
-- **Idempotent Ingestion**: High-reliability Python pipelines for historical metrics (1950–2024) with built-in rate limiting and retries.
-- **Automated Asset Ingestion**: Weekly refreshes of driver headshots, team logos, and technical blueprints via async workers.
-- **Privacy-First Analytics**: Clean, secure tracking of platform performance without compromising user anonymity.
+The platform is being rebuilt around:
 
-## ⚙️ Modern Tech Stack
+* real F1 data integrity
+* production-grade architecture
+* fast navigation
+* premium motorsport UI
+* scalable infrastructure
+* explainable ML predictions
+* thermal/performance stability
 
-- **Frontend**: `Next.js 16` (App Router), `Tailwind CSS`, `Framer Motion`, `Lucide React`
-- **Graphics**: `Three.js`, `@react-three/fiber`, `@react-three/drei`, `Postprocessing`
-- **Backend API**: `FastAPI` (Asynchronous), `PostgreSQL` (SQLAlchemy 2.0), `Alembic`
-- **Data/ML**: `Scikit-learn`, `XGBoost`, `Pandas`, `NumPy`
-- **Infrastructure**: `Docker`, `GitHub Actions`, `Redis` (Caching)
+The goal is simple:
 
-## 🚀 Getting Started
+> Build the best independent Formula 1 intelligence platform on the web.
 
-### 1. Environmental Setup
-Clone the repository and initialize the data layer:
-```bash
-docker-compose up -d
+---
+
+# Core Features
+
+## Drivers & Teams
+
+* Complete driver database
+* Team profiles and constructor standings
+* Driver statistics and historical performance
+* Headshots, branding, and metadata
+* Dynamic standings and points tracking
+
+---
+
+## Race Calendar & Results
+
+* Full season schedule
+* Session timelines
+* Grand Prix results
+* Circuit information
+* Race detail pages
+* Historical season coverage
+
+---
+
+## Predictions Engine
+
+Machine learning pipeline trained on historical Formula 1 data.
+
+### Current Capabilities
+
+* Race outcome predictions
+* Podium probability estimation
+* Top-10 ranking forecasts
+* Feature-engineered inference pipeline
+* Redis-cached predictions
+* Explainable prediction factors
+
+### ML Stack
+
+* XGBoost
+* Scikit-learn
+* Pandas
+* NumPy
+
+---
+
+## Live Timing Simulation
+
+Replay historical races using lap-by-lap timing data.
+
+### Includes
+
+* Interactive track maps
+* Driver position playback
+* Lap progression
+* Speed controls
+* Telemetry-inspired race visualization
+
+---
+
+## Search System
+
+Global omni-search across:
+
+* drivers
+* teams
+* circuits
+* races
+* seasons
+
+Built for fast navigation and low-latency querying.
+
+---
+
+# Tech Stack
+
+## Frontend
+
+* Next.js (App Router)
+* TypeScript
+* Tailwind CSS
+* Framer Motion
+* Recharts
+
+## Backend
+
+* FastAPI
+* SQLAlchemy 2.0
+* PostgreSQL
+* Alembic
+* Redis
+
+## Infrastructure
+
+* Supabase
+* Upstash Redis
+* Railway
+* Vercel
+* GitHub Actions
+
+---
+
+# Architecture
+
+```text
+apps/
+├── api/        → FastAPI backend
+├── web/        → Next.js frontend
+└── packages/   → shared types/utilities
 ```
 
-### 2. Backend Intelligence (API)
+---
+
+# Local Development
+
+## 1. Clone Repository
+
+```bash
+git clone https://github.com/Subhasish-33/APEX-f1.git
+cd APEX-f1
+```
+
+---
+
+## 2. Backend Setup
+
 ```bash
 cd apps/api
+
+python -m venv .venv
+source .venv/bin/activate
+
 pip install -r requirements.txt
-export PYTHONPATH=$PYTHONPATH:../..
-uvicorn apps.api.main:app --reload --port 8001
 ```
 
-### 3. Web Interface (Frontend)
+Create:
+
+```bash
+apps/api/.env
+```
+
+Add:
+
+```env
+DATABASE_URL=your_supabase_url
+REDIS_URL=your_upstash_url
+```
+
+Run migrations:
+
+```bash
+alembic upgrade head
+```
+
+Start backend:
+
+```bash
+uvicorn main:app --reload
+```
+
+---
+
+## 3. Frontend Setup
+
 ```bash
 cd apps/web
+
 pnpm install
 pnpm dev
 ```
 
-## 📊 Feature Roadmap
+---
 
-- [x] **Phase 1**: Core Data Ingestion & Schema Design
-- [x] **Phase 2**: 3D Asset Pipeline & Cinematic Camera Controls
-- [x] **Phase 3**: Intelligence Platform & Predictive Modeling
-- [ ] **Phase 4**: Real-time Live Timing Integration (Upcoming)
-- [ ] **Phase 5**: Multi-user Strategy Simulations (Upcoming)
+# Environment
 
-## 🛠️ Performance Benchmarks
-- **Lighthouse Score**: 98+ (Performance, Accessibility, SEO)
-- **3D Frame Rate**: Stable 60FPS on mobile and desktop
-- **API Latency**: <30ms for cached telemetry requests
+## Production Infrastructure
+
+| Service  | Provider      |
+| -------- | ------------- |
+| Frontend | Vercel        |
+| Backend  | Railway       |
+| Database | Supabase      |
+| Cache    | Upstash Redis |
 
 ---
-*Developed with ❤️ by the APEX Engineering Team. Powered by Jolpica Ergast & OpenF1 API.*
+
+# Performance Direction
+
+APEX-F1 prioritizes:
+
+* low thermal overhead
+* minimal client-side rendering
+* server-first architecture
+* optimized bundle size
+* responsive mobile performance
+* scalable API design
+
+Heavy experimental 3D systems and over-engineered orchestration layers were intentionally removed during Phase 2 stabilization.
+
+---
+
+# Current Status
+
+## Completed
+
+* stable monorepo architecture
+* cloud database migration
+* Redis caching layer
+* prediction inference pipeline
+* standings and race APIs
+* frontend design token system
+* CI/CD workflows
+* thermal stabilization pass
+
+## In Progress
+
+* official F1-level data parity
+* live timing refinement
+* news integration
+* team/driver media pipelines
+* production deployment hardening
+
+---
+
+# Roadmap
+
+## Phase 2
+
+* official F1 parity rebuild
+* drivers/teams/news completion
+* frontend UX overhaul
+* mobile-first optimization
+
+## Phase 3
+
+* advanced telemetry
+* race replay enhancements
+* explainable AI predictions
+* strategy simulations
+
+## Phase 4
+
+* true real-time live timing
+* multi-user race rooms
+* fantasy and strategy systems
+
+---
+
+# License
+
+MIT License
+
+---
+
+Built by Subhasish Kumar Sahu.
