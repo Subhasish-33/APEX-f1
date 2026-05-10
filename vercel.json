@@ -1,0 +1,6 @@
+{
+  "buildCommand": "pnpm --filter web build",
+  "outputDirectory": "apps/web/.next",
+  "ignoreCommand": "git diff --quiet HEAD^ HEAD .",
+  "framework": "nextjs"
+}
