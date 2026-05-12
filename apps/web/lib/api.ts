@@ -17,7 +17,7 @@ import { API_BASE_URL, DEFAULT_REVALIDATE } from "@/lib/config";
 async function fetcher<T>(path: string, options?: RequestInit): Promise<T> {
   // FINAL SAFETY: If we are in the Vercel build phase, DO NOT fetch.
   // This prevents the 502 from killing the build during "Collecting page data".
-  if (process.env.NEXT_PHASE === 'phase-production-build' || process.env.VERCEL === '1') {
+  if (process.env.NEXT_PHASE === 'phase-production-build') {
     console.log(`[BUILD-SAFE] Skipping fetch for ${path} during Vercel build.`);
     return { data: [], total: 0, page: 1, limit: 20 } as any;
   }
