@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import { api } from "@/lib/api";
 import { f1Teams2025 } from "@/data/f1Teams2025";
 import { TeamDetailClient } from "@/components/TeamDetailClient";

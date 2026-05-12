@@ -7,12 +7,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
 
-export async function generateStaticParams() {
-  const standings = await api.getSeasonStandings(2025);
-  return standings.data.map((entry) => ({
-    ref: entry.driver?.driver_ref,
-  }));
-}
+
 
 export default async function DriverDetailPage({
   params,
