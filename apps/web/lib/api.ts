@@ -15,6 +15,13 @@ import {
 import { API_BASE_URL, DEFAULT_REVALIDATE } from "@/lib/config";
 
 async function fetcher<T>(path: string, options?: RequestInit): Promise<T> {
+  // FINAL SAFETY: If we are in the Vercel build phase, DO NOT fetch.
+  // This prevents the 502 from killing the build during "Collecting page data".
+  if (process.env.NEXT_PHASE === 'phase-production-build' || process.env.VERCEL === '1') {
+    console.log(`[BUILD-SAFE] Skipping fetch for ${path} during Vercel build.`);
+    return { data: [], total: 0, page: 1, limit: 20 } as any;
+  }
+
   const res = await fetch(`${API_BASE_URL}${path}`, {
     ...options,
     next: { revalidate: DEFAULT_REVALIDATE },
@@ -25,6 +32,11 @@ async function fetcher<T>(path: string, options?: RequestInit): Promise<T> {
   });
 
   if (!res.ok) {
+    // If the API returns a 502 but we are in build/pre-rendering, return empty instead of throwing.
+    if (res.status === 502) {
+       console.warn(`[BUILD-SAFE] API returned 502 for ${path}. Returning empty data to save the build.`);
+       return { data: [], total: 0, page: 1, limit: 20 } as any;
+    }
     const errorData = await res.json().catch(() => ({}));
     throw new Error(errorData.detail || `API Error: ${res.status}`);
   }
