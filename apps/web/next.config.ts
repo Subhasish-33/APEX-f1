@@ -7,7 +7,6 @@ const bundleAnalyzer = withBundleAnalyzer({
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
-  distDir: ".next",
 
   // ── Turbopack (Next.js 16 default) ───────────────────────────────────────
   // Empty config silences the webpack/turbopack conflict warning.
