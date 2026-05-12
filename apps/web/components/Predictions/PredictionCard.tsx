@@ -3,12 +3,12 @@ import React, { useState } from 'react';
 import { ChevronDown, ChevronUp, Zap } from 'lucide-react';
 
 interface PredictionItemProps {
-  position: int;
+  position: number;
   driverRef: string;
   name: string;
   constructorName: string;
-  confidenceScore: float;
-  gridPosition: int;
+  confidenceScore: number;
+  gridPosition: number;
   predictionFactors: string[];
 }
 

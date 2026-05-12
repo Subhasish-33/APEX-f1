@@ -88,8 +88,8 @@ export function CircuitHUD({ name, stats }: CircuitHUDProps) {
           </div>
           <div className="space-y-3">
             <MetricItem label="LAP RECORD" value={stats.lapRecord.time} sub={stats.lapRecord.driver} />
-            <MetricItem label="CIRCUIT LENGTH" value={stats.stats.length} />
-            <MetricItem label="TOTAL TURNS" value={stats.stats.turns.toString()} />
+            <MetricItem label="CIRCUIT LENGTH" value={stats.length} />
+            <MetricItem label="TOTAL TURNS" value={stats.turns.toString()} />
           </div>
         </div>
       </div>

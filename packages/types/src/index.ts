@@ -150,6 +150,7 @@ export interface Telemetry {
   speed_trap?: number;
   weather_temp?: number;
   track_temp?: number;
+  position?: number;
 }
 
 export interface Rivalry {

@@ -8,6 +8,9 @@ import {
   ConstructorHistoryEntry,
   PaginatedResponse,
   Prediction,
+  Circuit,
+  Telemetry,
+  SeasonIntelligence,
 } from "@apex/types";
 import { API_BASE_URL, DEFAULT_REVALIDATE } from "@/lib/config";
 

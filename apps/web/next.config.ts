@@ -31,8 +31,7 @@ const nextConfig: NextConfig = {
 
   // ── Dev Indicators ────────────────────────────────────────────────────────
   devIndicators: {
-    appIsrStatus: false,
-    buildActivity: false,
+    position: "bottom-right",
   },
 
   // ── File Watcher Optimization ─────────────────────────────────────────────
