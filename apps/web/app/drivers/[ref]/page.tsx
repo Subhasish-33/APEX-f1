@@ -1,4 +1,6 @@
 import { api } from "@/lib/api";
+export const dynamic = "force-dynamic";
+
 import { Suspense } from "react";
 import PointsChart from "@/components/PointsChart";
 import Link from "next/link";

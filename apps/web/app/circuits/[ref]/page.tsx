@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import { use } from "react";
 import { api } from "../../../lib/api";
 import { CircuitHUD } from "../../../components/Circuit/CircuitHUD";

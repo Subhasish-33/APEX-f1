@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import { Suspense } from "react";
 import { api } from "@/lib/api";
 import StandingsTable from "@/components/StandingsTable";
