@@ -60,10 +60,22 @@ async function DriversGrid({ year }: { year: number }) {
   const standings = await api.getSeasonStandings(year);
   
   if (!standings.data || standings.data.length === 0) {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8001";
     return (
-      <div className="py-40 text-center border border-white/5 bg-white/[0.02] rounded-sm telemetry-grid">
-        <p className="text-[var(--color-text-secondary)] font-medium font-display text-2xl uppercase tracking-widest italic">
-          SIGNAL LOST: No telemetry found for {year}
+      <div className="py-40 px-6 sm:px-12 text-center border-2 border-[var(--color-f1-red)]/50 bg-black/80 rounded-sm telemetry-grid relative overflow-hidden">
+        <SectorOverlay className="opacity-10" />
+        <h2 className="text-[var(--color-f1-red)] font-display font-black text-3xl sm:text-4xl uppercase tracking-widest mb-8 relative z-10">
+          System Fault: Data Vacuum
+        </h2>
+        <div className="max-w-xl mx-auto space-y-4 text-left font-data text-[10px] sm:text-xs text-white/60 bg-black p-6 sm:p-8 border border-white/10 relative z-10">
+          <p className="text-white font-bold uppercase tracking-widest border-b border-white/20 pb-2 mb-4">Diagnostic Trace</p>
+          <div className="flex justify-between"><span>Subject Year:</span> <span className="text-[var(--color-f1-red)]">{year}</span></div>
+          <div className="flex justify-between"><span>Endpoint:</span> <span className="text-[var(--color-f1-red)] break-all">{apiUrl}/seasons/{year}/standings/drivers</span></div>
+          <div className="flex justify-between"><span>Payload Size:</span> <span className="text-[var(--color-f1-red)]">0 Bytes</span></div>
+          <div className="flex justify-between"><span>Status:</span> <span className="text-[var(--color-f1-red)]">EMPTY_ARRAY_RESPONSE</span></div>
+        </div>
+        <p className="mt-12 text-[var(--color-text-secondary)] text-[10px] font-medium tracking-[0.4em] uppercase opacity-40 relative z-10">
+          Stabilization Pass Active // Fallback Opacity Removed
         </p>
       </div>
     );
