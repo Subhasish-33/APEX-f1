@@ -55,7 +55,7 @@ export function SessionTimeline({ race, state }: SessionTimelineProps) {
               initial={false}
               animate={{
                 scale: isActive ? 1.2 : 1,
-                backgroundColor: isActive ? "#E10600" : isCompleted ? "#C8960C" : "rgba(255,255,255,0.2)"
+                backgroundColor: isActive ? "var(--color-f1-red)" : isCompleted ? "var(--color-gold)" : "rgba(255,255,255,0.2)"
               }}
               className={`w-3 h-3 rounded-full z-10 border-2 ${
                 isActive ? "border-white shadow-[0_0_15px_rgba(225,6,0,0.8)]" : "border-transparent"

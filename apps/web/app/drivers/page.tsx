@@ -1,11 +1,13 @@
-export const dynamic = "force-dynamic";
 import { Suspense } from "react";
 import { api } from "@/lib/api";
-import Image from "next/image";
 import Link from "next/link";
 import SeasonSelector from "@/components/SeasonSelector";
-import { getDriverHeadshot } from "@/lib/constants/assets";
-import { ChevronRight } from "lucide-react";
+import TimingFrame from "@/components/media/TimingFrame";
+import SectorOverlay from "@/components/media/SectorOverlay";
+
+import TelemetryLoading from "@/components/media/TelemetryLoading";
+
+export const revalidate = 3600;
 
 export default async function DriversPage({
   searchParams,
@@ -13,19 +15,22 @@ export default async function DriversPage({
   searchParams: Promise<{ year?: string }>;
 }) {
   const { year: yearParam } = await searchParams;
-  const year = yearParam ? parseInt(yearParam) : 2025;
+  const year = yearParam ? parseInt(yearParam) : 2024;
 
   return (
-    <main className="bg-[var(--color-bg-primary)] min-h-screen pt-24 pb-20">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <header className="flex flex-col sm:flex-row justify-between items-end gap-6 mb-12 border-b border-white/5 pb-10">
+    <main className="bg-[var(--color-bg-primary)] min-h-screen pt-24 pb-20 relative overflow-hidden">
+      {/* Global Backdrop Atmosphere */}
+      <div className="absolute inset-0 telemetry-noise opacity-20 pointer-events-none" />
+      
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <header className="flex flex-col sm:flex-row justify-between items-end gap-6 mb-20 border-b border-white/5 pb-10 relative">
           <div>
             <div className="flex items-center gap-2 mb-4">
-              <span className="w-8 h-[2px] bg-[var(--color-f1-red)]" />
-              <span className="text-[10px] uppercase font-black tracking-[0.3em] text-[var(--color-f1-red)]">The Grid</span>
+              <span className="w-8 h-[1px] bg-[var(--color-f1-red)]" />
+              <span className="text-[10px] uppercase font-black tracking-[0.4em] text-[var(--color-f1-red)] italic">Grid Telemetry</span>
             </div>
-            <h1 className="text-5xl sm:text-7xl font-display font-black text-[var(--color-text-primary)] uppercase tracking-tighter italic leading-none">
-              F1 <span className="text-[var(--color-f1-red)]">Drivers</span>
+            <h1 className="text-5xl sm:text-8xl font-display font-black text-white uppercase tracking-tighter italic leading-none">
+              F1 <span className="text-outline">Drivers</span>
             </h1>
           </div>
           <Suspense fallback={<div className="h-10 w-32 bg-white/5 animate-pulse rounded-sm" />}>
@@ -35,13 +40,7 @@ export default async function DriversPage({
 
         <Suspense 
           key={year} 
-          fallback={
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-              {[...Array(20)].map((_, i) => (
-                <div key={i} className="h-96 bg-white/5 animate-pulse rounded-sm" />
-              ))}
-            </div>
-          }
+          fallback={<TelemetryLoading />}
         >
           <DriversGrid year={year} />
         </Suspense>
@@ -50,57 +49,135 @@ export default async function DriversPage({
   );
 }
 
+import NationalityFlag from "@/components/NationalityFlag";
+import { getTeamTheme } from "@/lib/drivers/driver-theme-map";
+import { getDriverIdentity } from "@/lib/drivers/driver-identity-map";
+import { getDriverMedia } from "@/lib/driver-media";
+import DriverImage from "@/components/media/DriverImage";
+import { cn } from "@/lib/utils";
+
 async function DriversGrid({ year }: { year: number }) {
   const standings = await api.getSeasonStandings(year);
   
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-      {standings.data.map((entry) => (
-        <Link 
-          href={`/drivers/${entry.driver?.driver_ref}`} 
-          key={entry.id}
-          className="group relative bg-[var(--color-bg-secondary)] border border-white/5 rounded-sm overflow-hidden hover:border-[var(--color-f1-red)]/50 transition-ui hover:translate-y-[-4px]"
-        >
-          <div className="relative h-56 w-full bg-gradient-to-br from-white/5 to-transparent">
-            <Image
-              src={getDriverHeadshot(entry.driver?.driver_ref || "", year)}
-              alt={entry.driver?.surname || ""}
-              fill
-              className="object-contain object-bottom transition-transform duration-700 group-hover:scale-105"
-              sizes="(max-w-768px) 100vw, 25vw"
-              priority={entry.position <= 4}
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-bg-primary)]/80 to-transparent" />
-          </div>
+  if (!standings.data || standings.data.length === 0) {
+    return (
+      <div className="py-40 text-center border border-white/5 bg-white/[0.02] rounded-sm telemetry-grid">
+        <p className="text-[var(--color-text-secondary)] font-medium font-display text-2xl uppercase tracking-widest italic">
+          SIGNAL LOST: No telemetry found for {year}
+        </p>
+      </div>
+    );
+  }
 
-          <div className="p-8">
-            <div className="flex justify-between items-start mb-8">
-              <span className="text-5xl font-display font-black italic text-white/5 group-hover:text-[var(--color-f1-red)]/20 transition-ui">
-                {entry.position}
-              </span>
-              <div className="text-right">
-                <span className="block text-[var(--color-text-primary)] font-black text-2xl leading-none font-data italic">{entry.points}</span>
-                <span className="text-[8px] text-[var(--color-text-muted)] font-black uppercase tracking-[0.2em]">Championship Points</span>
-              </div>
-            </div>
-            
-            <h3 className="text-xl font-bold text-[var(--color-text-primary)] uppercase tracking-tight group-hover:text-[var(--color-f1-red)] transition-ui">
-              {entry.driver?.forename} <span className="block font-display font-black text-3xl leading-none mt-1">{entry.driver?.surname}</span>
-            </h3>
-            
-            <div className="mt-8 pt-6 border-t border-white/5 flex justify-between items-center">
-              <span className="text-[10px] text-[var(--color-text-muted)] font-black uppercase tracking-widest italic">
-                {entry.driver?.nationality}
-              </span>
-              <div className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center text-white group-hover:bg-[var(--color-f1-red)] group-hover:border-[var(--color-f1-red)] transition-ui">
-                <ChevronRight size={18} />
-              </div>
-            </div>
-          </div>
+  return (
+    <div className="flex flex-col gap-24">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 xl:gap-16">
+        {standings.data.map((entry, index) => {
+          const theme = getTeamTheme(entry.constructor?.constructor_ref);
+          const identity = getDriverIdentity(entry.driver?.driver_ref);
+          const media = getDriverMedia(entry.driver?.driver_ref);
           
-          <div className="absolute bottom-0 left-0 h-[2px] w-0 bg-[var(--color-f1-red)] group-hover:w-full transition-all duration-500" />
-        </Link>
-      ))}
+          // PHASE 3: Editorial Rhythm Logic
+          const isIconic = index < 2; // P1 & P2 get massive hero cards
+          const isFeatured = index >= 2 && index < 4; // P3 & P4 get medium cards
+          
+          const colSpan = isIconic ? "lg:col-span-6" : 
+                          isFeatured ? "lg:col-span-6" : "lg:col-span-4";
+
+          return (
+            <div key={entry.id} className={cn(colSpan, "group")}>
+              <TimingFrame>
+                <Link 
+                  href={`/drivers/${entry.driver?.driver_ref}`} 
+                  className={cn(
+                    "relative block bg-[var(--color-bg-secondary)] overflow-hidden transition-all duration-700",
+                    isIconic ? "min-h-[600px]" : "min-h-[420px]"
+                  )}
+                >
+                  {/* Phase 4: Signature APEX Motif */}
+                  <SectorOverlay className="opacity-10 group-hover:opacity-20 transition-opacity" />
+                  <div 
+                    className="absolute inset-0 opacity-10 transition-opacity duration-1000 group-hover:opacity-30" 
+                    style={{ background: theme.gradient }} 
+                  />
+                  <div className="absolute inset-0 telemetry-grid opacity-30" />
+                  
+                  {/* Phase 1: Architectural Typography */}
+                  <div className="absolute inset-0 flex items-center justify-center overflow-hidden pointer-events-none">
+                    <span className="text-display-4 font-display font-black text-white/5 italic tracking-tighter-extreme select-none leading-none group-hover:scale-110 group-hover:text-white/10 transition-transform duration-[2000ms] ease-mechanical">
+                      {entry.driver?.surname?.slice(0, 3).toUpperCase()}
+                    </span>
+                  </div>
+
+                  <div className="relative flex flex-col h-full">
+                    {/* Top Stats Layer */}
+                    <div className="p-8 pb-0 flex justify-between items-start z-30">
+                       <div className="flex items-center gap-3">
+                         <span className="w-8 h-[1px] bg-[var(--color-f1-red)]" />
+                         <span className="text-[10px] font-black text-white uppercase tracking-[0.4em] italic leading-none">
+                            {isIconic ? "Apex Elite" : `Sector ${index + 1}`}
+                         </span>
+                       </div>
+                       <span className="text-4xl font-display font-black italic text-white/20 group-hover:text-white transition-colors duration-700 leading-none">
+                          {entry.position.toString().padStart(2, '0')}
+                       </span>
+                    </div>
+
+                    {/* Media Container */}
+                    <div className={cn(
+                      "relative flex-1 overflow-hidden",
+                      isIconic ? "mt-[-4rem]" : ""
+                    )}>
+                      <DriverImage
+                        src={media.hero}
+                        blurSrc={media.blur}
+                        alt={entry.driver?.surname || ""}
+                        fill
+                        containerClassName="h-full w-full"
+                        className="object-contain object-bottom group-hover:scale-105 transition-transform duration-[1500ms] ease-mechanical"
+                        cropPosition="bottom"
+                        priority={isIconic}
+                        sizes={isIconic ? "50vw" : "33vw"}
+                      />
+                    </div>
+
+                    {/* Identity Footer */}
+                    <div className="relative z-30 p-8 pt-0 bg-gradient-to-t from-[var(--color-bg-secondary)] via-[var(--color-bg-secondary)]/80 to-transparent">
+                       <NationalityFlag nationality={entry.driver?.nationality} className="w-6 h-4 mb-4" />
+                       <h3 className="font-display font-black text-4xl xl:text-5xl uppercase italic leading-[0.85] tracking-tighter text-white mb-2">
+                         <span className="text-sm block font-medium tracking-normal not-italic text-[var(--color-text-secondary)] mb-1">{entry.driver?.forename}</span>
+                         {entry.driver?.surname}
+                       </h3>
+                       <p className="text-[8px] font-black uppercase tracking-[0.2em] text-[var(--color-text-muted)] italic">
+                         // {identity.tagline}
+                       </p>
+                       
+                       <div className="mt-8 flex justify-between items-center border-t border-white/5 pt-6 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                          <span className="text-[10px] font-bold text-white uppercase tracking-widest">{entry.constructor?.name}</span>
+                          <span className="text-xl font-data font-black text-white italic">{entry.points} pts</span>
+                       </div>
+                    </div>
+                  </div>
+                </Link>
+              </TimingFrame>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Phase 3: Editorial Separator moment */}
+      <div className="py-20 border-y border-white/5 relative overflow-hidden bg-white/[0.01]">
+         <SectorOverlay className="opacity-5" />
+         <div className="max-w-4xl mx-auto text-center relative z-10">
+            <span className="text-[var(--color-f1-red)] font-black text-[10px] uppercase tracking-[0.6em] mb-8 block italic">Engineered Excellence</span>
+            <h2 className="text-white font-display font-black text-6xl xl:text-8xl uppercase italic tracking-tighter leading-none mb-12">
+               Precision is the <br/> Only <span className="text-outline">Language</span>
+            </h2>
+            <p className="text-[var(--color-text-secondary)] text-sm font-medium tracking-widest uppercase opacity-40">
+               APEX Telemetry // Season 2024 Intelligence
+            </p>
+         </div>
+      </div>
     </div>
   );
 }

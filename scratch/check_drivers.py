@@ -1,15 +1,12 @@
 import asyncio
-from sqlalchemy import select
-from apps.api.db import engine
-from apps.api.models import DriverStanding, Driver
+from db import engine
+from sqlalchemy import text
 
-async def check():
+async def check_drivers():
     async with engine.connect() as conn:
-        # Get latest race_id
-        latest_race_id = await conn.scalar(select(DriverStanding.race_id).order_by(DriverStanding.race_id.desc()).limit(1))
-        stmt = select(Driver.driver_ref).join(DriverStanding).where(DriverStanding.race_id == latest_race_id)
-        res = await conn.execute(stmt)
-        print([r[0] for r in res.all()])
+        res = await conn.execute(text("SELECT driver_ref FROM drivers LIMIT 10"))
+        for row in res:
+            print(row[0])
 
 if __name__ == "__main__":
-    asyncio.run(check())
+    asyncio.run(check_drivers())

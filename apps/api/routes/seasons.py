@@ -52,7 +52,9 @@ async def get_season_driver_standings(
 ):
     offset = (page - 1) * limit
 
-    # Find the last race of the year that has standings recorded
+    from models import Result, Constructor
+    
+    # 1. Find the latest race of the year that has standings recorded
     latest_race_id = await session.scalar(
         select(Race.race_id)
         .join(DriverStanding, DriverStanding.race_id == Race.race_id)
@@ -68,16 +70,25 @@ async def get_season_driver_standings(
         select(func.count()).select_from(DriverStanding).where(DriverStanding.race_id == latest_race_id)
     )
 
+    # We join with Result to get the constructor_id for this specific driver in this specific race
     stmt = (
-        select(DriverStanding)
+        select(DriverStanding, Constructor)
+        .join(Result, (Result.race_id == DriverStanding.race_id) & (Result.driver_id == DriverStanding.driver_id))
+        .join(Constructor, Result.constructor_id == Constructor.constructor_id)
         .where(DriverStanding.race_id == latest_race_id)
         .options(selectinload(DriverStanding.driver))
         .order_by(DriverStanding.position)
         .offset(offset)
         .limit(limit)
     )
+    
     result = await session.execute(stmt)
-    standings = result.scalars().all()
+    rows = result.all()
+    
+    standings = []
+    for standing, constructor in rows:
+        standing.constructor = constructor
+        standings.append(standing)
 
     return {"total_count": total_count, "page": page, "limit": limit, "data": standings}
 

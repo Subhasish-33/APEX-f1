@@ -49,7 +49,7 @@ export function CircuitHUD({ name, stats }: CircuitHUDProps) {
             <motion.path
               d="M100,300 Q200,100 400,300 T700,300 Q600,500 400,500 T100,300"
               fill="none"
-              stroke="#E10600"
+              stroke="var(--color-f1-red)"
               strokeWidth="4"
               strokeDasharray="20, 980"
               animate={{ strokeDashoffset: -1000 }}
@@ -60,7 +60,7 @@ export function CircuitHUD({ name, stats }: CircuitHUDProps) {
             <motion.path
               d="M400,300 T700,300"
               fill="none"
-              stroke="#00D2BE"
+              stroke="var(--color-team-mercedes)"
               strokeWidth="6"
               initial={{ opacity: 0 }}
               animate={{ opacity: [0.2, 0.8, 0.2] }}
@@ -68,8 +68,8 @@ export function CircuitHUD({ name, stats }: CircuitHUDProps) {
             />
             
             {/* Sector Markers */}
-            <circle cx="250" cy="200" r="4" fill="#E10600" />
-            <circle cx="550" cy="300" r="4" fill="#E10600" />
+            <circle cx="250" cy="200" r="4" fill="var(--color-f1-red)" />
+            <circle cx="550" cy="300" r="4" fill="var(--color-f1-red)" />
           </svg>
 
           {/* Floating Data Nodes */}

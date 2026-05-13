@@ -8,57 +8,84 @@
 
 @theme {
   /* ── Color Tokens ── */
-
-  /* Primary Accent */
   --color-f1-red: #E10600;
-
-  /* Backgrounds */
+  --color-gold: #C8960C;
+  
   --color-bg-primary: #0A0A0F;
   --color-bg-secondary: #141420;
   --color-bg-tertiary: #1E1E2E;
 
-  /* Text */
   --color-text-primary: #FFFFFF;
   --color-text-secondary: #9CA3AF;
   --color-text-muted: #4B5563;
 
-  /* Accents */
-  --color-gold: #C8960C;
   --color-success: #22C55E;
   --color-warning: #F59E0B;
   --color-danger: #EF4444;
+  --color-info: #3B82F6;
+
+  /* ── Team Color Tokens ── */
+  --color-team-redbull: #3671C6;
+  --color-team-ferrari: #E8002D;
+  --color-team-mercedes: #27F4D2;
+  --color-team-mclaren: #FF8000;
+  --color-team-astonmartin: #229971;
+  --color-team-alpine: #0093CC;
+  --color-team-williams: #64C4FF;
+  --color-team-rb: #6692FF;
+  --color-team-sauber: #52E252;
+  --color-team-haas: #B6BABD;
 
   /* ── Typography Tokens ── */
-  --font-display: var(--font-display);   /* Barlow Condensed — hero, team names, surnames */
-  --font-sans: var(--font-inter);         /* Inter — interface, headings, body, labels */
-  --font-mono: var(--font-mono);          /* JetBrains Mono — lap times, telemetry, data */
+  --font-display: var(--font-display);
+  --font-sans: var(--font-inter);
+  --font-mono: var(--font-mono);
+
+  --text-display-1: 8rem;
+  --text-display-2: 12rem;
+  --text-display-3: 16rem;
+  --text-display-4: 20rem;
+
+  /* ── Spacing Tokens ── */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  --spacing-2xl: 3rem;
+  --spacing-3xl: 4rem;
+  --spacing-4xl: 6rem;
+  --spacing-5xl: 8rem;
 
   /* ── Motion Tokens ── */
-  /* Duration */
-  --duration-micro: 100ms;     /* Micro-interactions */
-  --duration-standard: 150ms;  /* Standard UI response */
-  --duration-transition: 200ms; /* Page transitions */
-  --duration-reveal: 300ms;    /* Data reveals */
-  /* Nothing exceeds 400ms */
+  --duration-micro: 100ms;
+  --duration-standard: 150ms;
+  --duration-transition: 200ms;
+  --duration-reveal: 300ms;
 
-  /* Easing */
-  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);   /* Entries */
-  --ease-in: cubic-bezier(0.4, 0, 1, 1);        /* Exits */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-mechanical: cubic-bezier(0.8, 0, 0.2, 1);
+
+  /* ── Radius Tokens ── */
+  --radius-sm: 0.125rem;
+  --radius-md: 0.25rem;
+  --radius-lg: 0.5rem;
 }
 
-/* ── CSS Custom Properties (for legacy/non-Tailwind usage) ───────────────── */
 :root {
-  --color-f1-red: #E10600;
-  --color-bg-primary: #0A0A0F;
-  --color-bg-secondary: #141420;
-  --color-bg-tertiary: #1E1E2E;
-  --color-text-primary: #FFFFFF;
-  --color-text-secondary: #9CA3AF;
-  --color-text-muted: #4B5563;
-  --color-gold: #C8960C;
-  --color-success: #22C55E;
-  --color-warning: #F59E0B;
-  --color-danger: #EF4444;
+  /* Derive all legacy variables from the theme tokens */
+  --color-f1-red: var(--color-f1-red);
+  --color-bg-primary: var(--color-bg-primary);
+  --color-bg-secondary: var(--color-bg-secondary);
+  --color-bg-tertiary: var(--color-bg-tertiary);
+  --color-text-primary: var(--color-text-primary);
+  --color-text-secondary: var(--color-text-secondary);
+  --color-text-muted: var(--color-text-muted);
+  --color-gold: var(--color-gold);
+  --color-success: var(--color-success);
+  --color-warning: var(--color-warning);
+  --color-danger: var(--color-danger);
 }
 
 /* ── Base ─────────────────────────────────────────────────────────────────── */
@@ -106,5 +133,76 @@ body {
 
   .font-data {
     font-family: var(--font-mono), 'JetBrains Mono', monospace;
+  }
+
+  /* ── Telemetry & Cinematic Utilities ── */
+  .telemetry-grid {
+    background-size: 30px 30px;
+    background-image: 
+      linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px);
+  }
+
+  .telemetry-noise {
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    opacity: 0.015;
+    pointer-events: none;
+  }
+
+  .scanline {
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(to right, transparent, rgba(255,255,255,0.1), transparent);
+    animation: scan 4s linear infinite;
+    position: absolute;
+    z-index: 10;
+  }
+
+  @keyframes scan {
+    from { transform: translateY(-100%); }
+    to { transform: translateY(1000%); }
+  }
+
+  .shadow-glass {
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  }
+
+  .mask-radial-fade {
+    mask-image: radial-gradient(circle at center, black 40%, transparent 90%);
+  }
+
+  /* ── Architectural Typography ── */
+  .text-display-1 { font-size: var(--text-display-1); }
+  .text-display-2 { font-size: var(--text-display-2); }
+  .text-display-3 { font-size: var(--text-display-3); }
+  .text-display-4 { font-size: var(--text-display-4); }
+
+  .tracking-tighter-extreme { letter-spacing: -0.08em; }
+  .tracking-widest-extreme { letter-spacing: 0.8em; }
+
+  .text-outline {
+    -webkit-text-stroke: 1px rgba(255, 255, 255, 0.1);
+    color: transparent;
+  }
+
+  .text-translucent {
+    color: transparent;
+    background-clip: text;
+    background-image: linear-gradient(to bottom, rgba(255,255,255,0.1), transparent);
+  }
+
+  /* ── Layering & Atmosphere ── */
+  .telemetry-bloom {
+    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.2));
+  }
+
+  .glass-reflection {
+    background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, transparent 100%);
+    backdrop-filter: blur(10px);
+  }
+
+  .vertical-type {
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
   }
 }

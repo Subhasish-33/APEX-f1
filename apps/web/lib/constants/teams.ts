@@ -1,14 +1,16 @@
+import { TOKENS } from "../tokens";
+
 export const TEAM_COLORS: Record<string, string> = {
-  "red_bull": "#3671C6",
-  "ferrari": "#E8002D",
-  "mercedes": "#27F4D2",
-  "mclaren": "#FF8000",
-  "aston_martin": "#229971",
-  "alpine": "#0093CC",
-  "williams": "#64C4FF",
-  "rb": "#6692FF",
-  "sauber": "#52E252",
-  "haas": "#B6BABD",
+  "red_bull": TOKENS.colors.teams.redBull,
+  "ferrari": TOKENS.colors.teams.ferrari,
+  "mercedes": TOKENS.colors.teams.mercedes,
+  "mclaren": TOKENS.colors.teams.mclaren,
+  "aston_martin": TOKENS.colors.teams.astonMartin,
+  "alpine": TOKENS.colors.teams.alpine,
+  "williams": TOKENS.colors.teams.williams,
+  "rb": TOKENS.colors.teams.rb,
+  "sauber": TOKENS.colors.teams.sauber,
+  "haas": TOKENS.colors.teams.haas,
 };
 
 export const TEAM_NAMES: Record<string, string> = {

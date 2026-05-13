@@ -1,31 +1,27 @@
 import type { Metadata } from "next";
-export const dynamic = "force-dynamic";
-import { Inter, Barlow_Condensed, JetBrains_Mono } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Analytics } from "@vercel/analytics/react";
 
 // ── Typography — Phase 2 Frozen Spec ─────────────────────────────────────────
-// Display: Barlow Condensed (hero titles, team names, driver surnames)
-// Interface: Inter (headings, body, labels, nav)
-// Data: JetBrains Mono (lap times, telemetry, code values)
-const inter = Inter({
+// Self-hosted fonts to ensure zero external DNS lookups.
+const inter = localFont({
+  src: "../public/fonts/Inter-Regular.woff2",
   variable: "--font-inter",
-  subsets: ["latin"],
   display: "swap",
 });
 
-const barlowCondensed = Barlow_Condensed({
+const barlowCondensed = localFont({
+  src: "../public/fonts/BarlowCondensed-Bold.ttf",
   variable: "--font-display",
-  weight: ["700", "900"],
-  subsets: ["latin"],
   display: "swap",
 });
 
-const jetbrainsMono = JetBrains_Mono({
+const jetbrainsMono = localFont({
+  src: "../public/fonts/JetBrainsMono-Regular.woff2",
   variable: "--font-mono",
-  subsets: ["latin"],
   display: "swap",
 });
 
