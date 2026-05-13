@@ -1,0 +1,9 @@
+apps/web
+node_modules
+.next
+.git
+scratch
+docs
+public
+!apps/api
+!packages/types
