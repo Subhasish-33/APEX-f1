@@ -266,22 +266,6 @@ function HeroStat({ label, value }: { label: string; value: number | string }) {
   );
 }
 
-    </main>
-  );
-}
-
-function HeroStat({ label, value, icon }: { label: string; value: number | string; icon: React.ReactNode }) {
-  return (
-    <div className="flex flex-col">
-      <div className="flex items-center gap-2 mb-2">
-        <span className="text-[var(--color-f1-red)]">{icon}</span>
-        <span className="text-[8px] uppercase tracking-[0.2em] text-[var(--color-text-muted)] font-black italic">{label}</span>
-      </div>
-      <span className="text-5xl text-white font-display font-black italic leading-none">{value}</span>
-    </div>
-  );
-}
-
 function DuelRow({ label, score, color }: { label: string; score: [number, number]; color: string }) {
   const total = score[0] + score[1];
   const percent = total > 0 ? (score[0] / total) * 100 : 50;

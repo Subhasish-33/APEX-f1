@@ -42,8 +42,8 @@ const config: Config = {
         md: TOKENS.spacing.md,
         lg: TOKENS.spacing.lg,
         xl: TOKENS.spacing.xl,
-        "2xl": TOKENS.spacing.2xl,
-        "3xl": TOKENS.spacing.3xl,
+        "2xl": TOKENS.spacing["2xl"],
+        "3xl": TOKENS.spacing["3xl"],
       },
       borderRadius: {
         sm: TOKENS.radii.sm,

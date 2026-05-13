@@ -5,25 +5,32 @@ import SeasonSelector from "@/components/SeasonSelector";
 import TimingFrame from "@/components/media/TimingFrame";
 import SectorOverlay from "@/components/media/SectorOverlay";
 
+import TelemetryLoading from "@/components/media/TelemetryLoading";
+
+export const revalidate = 3600;
+
 export default async function DriversPage({
   searchParams,
 }: {
   searchParams: Promise<{ year?: string }>;
 }) {
   const { year: yearParam } = await searchParams;
-  const year = yearParam ? parseInt(yearParam) : 2025;
+  const year = yearParam ? parseInt(yearParam) : 2024;
 
   return (
-    <main className="bg-[var(--color-bg-primary)] min-h-screen pt-24 pb-20">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <header className="flex flex-col sm:flex-row justify-between items-end gap-6 mb-12 border-b border-white/5 pb-10">
+    <main className="bg-[var(--color-bg-primary)] min-h-screen pt-24 pb-20 relative overflow-hidden">
+      {/* Global Backdrop Atmosphere */}
+      <div className="absolute inset-0 telemetry-noise opacity-20 pointer-events-none" />
+      
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <header className="flex flex-col sm:flex-row justify-between items-end gap-6 mb-20 border-b border-white/5 pb-10 relative">
           <div>
             <div className="flex items-center gap-2 mb-4">
-              <span className="w-8 h-[2px] bg-[var(--color-f1-red)]" />
-              <span className="text-[10px] uppercase font-black tracking-[0.3em] text-[var(--color-f1-red)]">The Grid</span>
+              <span className="w-8 h-[1px] bg-[var(--color-f1-red)]" />
+              <span className="text-[10px] uppercase font-black tracking-[0.4em] text-[var(--color-f1-red)] italic">Grid Telemetry</span>
             </div>
-            <h1 className="text-5xl sm:text-7xl font-display font-black text-[var(--color-text-primary)] uppercase tracking-tighter italic leading-none">
-              F1 <span className="text-[var(--color-f1-red)]">Drivers</span>
+            <h1 className="text-5xl sm:text-8xl font-display font-black text-white uppercase tracking-tighter italic leading-none">
+              F1 <span className="text-outline">Drivers</span>
             </h1>
           </div>
           <Suspense fallback={<div className="h-10 w-32 bg-white/5 animate-pulse rounded-sm" />}>
@@ -33,13 +40,7 @@ export default async function DriversPage({
 
         <Suspense 
           key={year} 
-          fallback={
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-              {[...Array(20)].map((_, i) => (
-                <div key={i} className="h-96 bg-white/5 animate-pulse rounded-sm" />
-              ))}
-            </div>
-          }
+          fallback={<TelemetryLoading />}
         >
           <DriversGrid year={year} />
         </Suspense>
@@ -54,8 +55,6 @@ import { getDriverIdentity } from "@/lib/drivers/driver-identity-map";
 import { getDriverMedia } from "@/lib/driver-media";
 import DriverImage from "@/components/media/DriverImage";
 import { cn } from "@/lib/utils";
-
-export const revalidate = 3600;
 
 async function DriversGrid({ year }: { year: number }) {
   const standings = await api.getSeasonStandings(year);

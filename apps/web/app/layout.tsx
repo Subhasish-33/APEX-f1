@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-export const dynamic = "force-dynamic";
 import localFont from "next/font/local";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
