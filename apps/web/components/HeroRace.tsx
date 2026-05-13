@@ -8,6 +8,16 @@ export default async function HeroRace() {
   
   // Find the next race or use the last one for demo
   const nextRace = racesData.data.find(r => new Date(r.date) > now) || racesData.data[racesData.data.length - 1];
+  
+  if (!nextRace) {
+    return (
+      <div className="relative bg-[var(--color-bg-primary)] py-32 border-b border-white/5 overflow-hidden flex flex-col items-center justify-center text-center">
+        <span className="text-[10px] font-black uppercase tracking-[0.6em] text-[var(--color-f1-red)] italic mb-4 block">Signal Lost</span>
+        <h2 className="text-white font-display font-black text-4xl uppercase italic tracking-widest">No Active Telemetry</h2>
+      </div>
+    );
+  }
+
   const isPast = new Date(nextRace.date) < now;
 
   return (
