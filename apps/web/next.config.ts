@@ -7,7 +7,6 @@ const bundleAnalyzer = withBundleAnalyzer({
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
-  turbopack: {},
   eslint: {
     ignoreDuringBuilds: true,
   },
