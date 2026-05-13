@@ -35,15 +35,13 @@ export const TEAM_CDN_SLUGS: { [key: string]: string } = {
 };
 
 export const getDriverHeadshot = (ref: string, year: number = 2026) => {
-  // Prefer local WebP assets first for better performance
-  // Pattern: /assets/drivers/{ref}.webp
+  // Prefer local WebP assets first
+  if (!ref) return '/assets/drivers/_placeholder.webp';
+  
   const localPath = `/assets/drivers/${ref}.webp`;
   
-  const mapping = DRIVER_CDN_IDS[ref];
-  if (!mapping) return localPath || '/images/driver-placeholder.png';
-  
-  const initial = mapping.id[0];
-  // Fallback to CDN if needed, but local is priority
+  // We check if the driver exists in our CDN IDs, but for local assets we just return the path
+  // and let Next.js handle the fallback if the file is missing (though ideally we should verify file existence)
   return localPath;
 };
 

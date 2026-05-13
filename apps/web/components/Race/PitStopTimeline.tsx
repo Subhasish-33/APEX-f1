@@ -53,7 +53,7 @@ export function PitStopTimeline({ pitStops, totalLaps }: PitStopTimelineProps) {
               name="Lap" 
               unit="" 
               domain={[0, totalLaps || 70]} 
-              stroke="#ffffff40" 
+              stroke="rgba(255,255,255,0.25)" 
               fontSize={10}
               tickLine={false}
               axisLine={false}
@@ -62,7 +62,7 @@ export function PitStopTimeline({ pitStops, totalLaps }: PitStopTimelineProps) {
               type="category" 
               dataKey="driver" 
               name="Driver" 
-              stroke="#ffffff40" 
+              stroke="rgba(255,255,255,0.25)" 
               fontSize={10}
               tickLine={false}
               axisLine={false}
@@ -71,13 +71,13 @@ export function PitStopTimeline({ pitStops, totalLaps }: PitStopTimelineProps) {
             <ZAxis type="number" dataKey="duration" range={[100, 500]} name="Duration" />
             <Tooltip 
               content={<CustomTooltip />}
-              cursor={{ strokeDasharray: '3 3', stroke: '#ffffff20' }}
+              cursor={{ strokeDasharray: '3 3', stroke: 'rgba(255,255,255,0.12)' }}
             />
             <Scatter name="Pit Stops" data={data}>
               {data.map((entry, index) => (
                 <Cell 
                   key={`cell-${index}`} 
-                  fill={entry.stop === 1 ? '#E10600' : '#FFD700'} 
+                  fill={entry.stop === 1 ? 'var(--color-f1-red)' : 'var(--color-gold)'} 
                   stroke="white" 
                   strokeWidth={1}
                   className="drop-shadow-[0_0_8px_rgba(225,6,0,0.5)]"

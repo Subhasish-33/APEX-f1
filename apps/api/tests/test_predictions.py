@@ -7,18 +7,17 @@ client = TestClient(app)
 
 @pytest.fixture
 def mock_db_session():
-    with patch("apps.api.db.get_db") as mock_get_db:
+    with patch("db.get_db") as mock_get_db:
         mock_session = AsyncMock()
         mock_get_db.return_value = mock_session
         yield mock_session
 
 @pytest.fixture
 def mock_redis():
-    with patch("redis.asyncio.Redis") as mock_redis_class:
-        mock_client = AsyncMock()
-        mock_redis_class.return_value = mock_client
+    with patch("routes.predictions.redis_client") as mock_client:
         # Setup default cache miss
-        mock_client.get.return_value = None
+        mock_client.get = AsyncMock(return_value=None)
+        mock_client.setex = AsyncMock()
         yield mock_client
 
 @pytest.fixture
@@ -40,7 +39,7 @@ def mock_inference_engine():
     app.state.inference_engine = engine
     yield engine
 
-@patch("apps.api.ml.features.FeatureBuilder.build_full_feature_vector")
+@patch("ml.features.FeatureBuilder.build_full_feature_vector")
 def test_predict_race_success(mock_build_features, mock_db_session, mock_redis, mock_inference_engine):
     """Test successful prediction with cache miss (calculates fresh)."""
     # Mock features being returned successfully
@@ -59,7 +58,7 @@ def test_predict_race_success(mock_build_features, mock_db_session, mock_redis, 
     # Assert Redis was called to set the cache
     mock_redis.setex.assert_called_once()
 
-@patch("apps.api.ml.features.FeatureBuilder.build_full_feature_vector")
+@patch("ml.features.FeatureBuilder.build_full_feature_vector")
 def test_predict_race_missing_features(mock_build_features, mock_db_session, mock_redis, mock_inference_engine):
     """Test graceful degradation when qualifying/features are missing."""
     # Mock features returning None (missing)
@@ -91,7 +90,7 @@ def test_predict_race_cache_hit(mock_db_session, mock_redis, mock_inference_engi
         "predictions": []
     })
     
-    with patch("apps.api.ml.features.FeatureBuilder.build_full_feature_vector") as mock_build:
+    with patch("ml.features.FeatureBuilder.build_full_feature_vector") as mock_build:
         response = client.post("/predictions/race", json={"race_id": 1144})
         
         assert response.status_code == 200

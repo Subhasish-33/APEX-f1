@@ -12,7 +12,7 @@ from models import PredictedRaceResult, PredictedDriverStanding, PredictionRun, 
 from schemas import PredictionResponse, PredictionItem, PredictedDriverStandingResponse
 from ml.context import PredictionContext
 from typing import List, Optional
-import redis.asyncio as redis
+from cache import redis_client
 import structlog
 
 logger = structlog.get_logger()
@@ -29,22 +29,8 @@ class RacePredictionRequest(BaseModel):
 @router.post("/race", response_model=PredictionResponse)
 async def predict_race(req: RacePredictionRequest, request: Request, db: AsyncSession = Depends(get_db)):
     """Live Inference Endpoint with Context Caching and Fallback Hierarchy."""
-    engine = request.app.state.inference_engine
-    if not engine or getattr(engine, 'is_ready', False) == False:
-        # Fallback to Qualifying Baseline
-        return PredictionResponse(
-            race_id=req.race_id,
-            race_name="Unknown",
-            model_version="fallback_v1",
-            calibration_version="none",
-            generated_at=datetime.utcnow(),
-            prediction_context="none",
-            regime_type="unknown",
-            confidence_summary="DEGRADED - ML Engine Unavailable",
-            fallback_mode_used="Qualifying Baseline",
-            predictions=[]
-        )
-        
+    engine = getattr(request.app.state, 'inference_engine', None)
+    
     # Generate Context Hash
     context_hash = PredictionContext.generate_context_hash(
         race_id=req.race_id,
@@ -54,15 +40,29 @@ async def predict_race(req: RacePredictionRequest, request: Request, db: AsyncSe
     )
     
     # Check Cache
-    redis_client = redis.Redis(host='localhost', port=6379, db=0)
-    cache_key = f"predict:{req.race_id}:{engine.registry.get_metadata()['version']}:{context_hash}"
+    cache_key = f"predict:{req.race_id}:{context_hash}"
     try:
-        cached = await redis_client.get(cache_key)
-        if cached:
+        cached_val = await redis_client.get(cache_key)
+        if cached_val:
             logger.info("Cache hit for predictions", cache_key=cache_key)
-            return json.loads(cached)
+            return json.loads(cached_val)
     except Exception as e:
         logger.warning("Redis unavailable. Proceeding without cache.", error=str(e))
+
+    if not engine or not getattr(engine, 'is_ready', False):
+        # Fallback to Graceful Degradation
+        return PredictionResponse(
+            race_id=req.race_id,
+            race_name=f"Race {req.race_id}",
+            model_version="fallback_v1",
+            calibration_version="none",
+            generated_at=datetime.utcnow(),
+            prediction_context=context_hash,
+            regime_type="AWAITING_QUALIFYING",
+            confidence_summary="DEGRADED - ML Engine Unavailable",
+            fallback_mode_used="Baseline System",
+            predictions=[]
+        )
         
     # Build Features
     from ml.features import FeatureBuilder

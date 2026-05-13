@@ -51,6 +51,15 @@ export const api = {
   getDriver: (ref: string) => 
     fetcher<Driver>(`/drivers/${ref}`),
 
+  getDriverCareer: (ref: string) =>
+    fetcher<any[]>(`/drivers/${ref}/career`),
+
+  getDriverResults: (ref: string, limit: number = 5) =>
+    fetcher<any[]>(`/drivers/${ref}/results?limit=${limit}`),
+
+  getTeammateDuel: (ref: string, year: number = 2024) =>
+    fetcher<any>(`/drivers/${ref}/teammate-duel?year=${year}`),
+
   getConstructor: (ref: string) =>
     fetcher<Constructor>(`/constructors/${ref}`),
   

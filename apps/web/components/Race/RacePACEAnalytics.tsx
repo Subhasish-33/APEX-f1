@@ -46,8 +46,8 @@ export function RacePACEAnalytics({ telemetry, driverId, totalLaps }: RacePACEAn
           <AreaChart data={driverData}>
             <defs>
               <linearGradient id="colorLap" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#E10600" stopOpacity={0.3}/>
-                <stop offset="95%" stopColor="#E10600" stopOpacity={0}/>
+                <stop offset="5%" stopColor="var(--color-f1-red)" stopOpacity={0.3}/>
+                <stop offset="95%" stopColor="var(--color-f1-red)" stopOpacity={0}/>
               </linearGradient>
             </defs>
             <XAxis dataKey="lap_number" hide />
@@ -56,7 +56,7 @@ export function RacePACEAnalytics({ telemetry, driverId, totalLaps }: RacePACEAn
             <Area 
               type="monotone" 
               dataKey="lap_time" 
-              stroke="#E10600" 
+              stroke="var(--color-f1-red)" 
               strokeWidth={3}
               fillOpacity={1} 
               fill="url(#colorLap)" 

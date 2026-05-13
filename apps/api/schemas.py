@@ -95,6 +95,7 @@ class DriverStandingResponse(BaseModel):
     position: int
     
     driver: Optional[DriverResponse] = None
+    constructor: Optional[ConstructorResponse] = None
 
     model_config = ConfigDict(from_attributes=True)
 

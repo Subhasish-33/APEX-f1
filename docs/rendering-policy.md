@@ -1,150 +1,57 @@
-# APEX F1 — Rendering Policy
+# APEX-F1 — Rendering Architecture Policy
 
-**Phase 2 Frozen — All component decisions must follow these rules.**
+**Status: Phase 2 Frozen**
 
----
-
-## Rule 1: Server Components by Default
-
-Every new file in `app/` is a **React Server Component (RSC)** unless it explicitly requires:
-- `useState` / `useReducer`
-- `useEffect` / `useCallback` / `useRef`
-- Browser-only APIs (`window`, `document`, `localStorage`)
-- Event handlers (`onClick`, `onMouseEnter`, etc.)
-
-If none of the above apply, **do not add `"use client"`.**
+## Core Principle
+APEX-F1 uses a **Server-First** architecture. The frontend must remain available and interactive even if the backend is slow or the user has a low-powered device.
 
 ---
 
-## Rule 2: `"use client"` Boundary Rules
+## 1. Component Strategy
 
-- Place `"use client"` as **low** in the tree as possible.
-- Never put `"use client"` on a page-level file if only one child needs it.
-- A client component can still render server component children via `children` prop.
+### Server Components (Default)
+- All pages and layout components **must** be Server Components by default.
+- Data fetching for static or historical F1 data (e.g., season results, team lists) **must** happen on the server.
+- No "use client" at the page level unless orchestration is required.
 
-**Correct pattern:**
-```tsx
-// app/drivers/page.tsx — Server Component (no "use client")
-import { DriverList } from "@/components/DriverList"; // Server
-import { DriverSearch } from "@/components/DriverSearch"; // Client
-
-export default async function DriversPage() {
-  const drivers = await api.getDrivers();
-  return (
-    <>
-      <DriverSearch /> {/* Client island */}
-      <DriverList drivers={drivers} /> {/* Server renders */}
-    </>
-  );
-}
-```
+### Client Components ("use client")
+Only use when:
+- **Interactivity**: Event listeners (`onClick`, `onChange`).
+- **State/Hooks**: `useState`, `useReducer`, `useEffect`.
+- **Browser APIs**: `window`, `localStorage`, `IntersectionObserver`.
+- **Motion**: Complex `framer-motion` animations that require layout projection.
 
 ---
 
-## Rule 3: Charts Must Be Dynamically Imported
+## 2. Boundary Rules
 
-All Recharts components **must** use `next/dynamic` with `ssr: false`.
-
-```tsx
-// ✅ CORRECT
-const BarChart = dynamic(() => import("recharts").then((m) => m.BarChart), { ssr: false });
-
-// ❌ BANNED
-import { BarChart } from "recharts";
-```
-
-Rationale: Recharts is ~300KB. Including it in the SSR bundle adds it to every page's initial load.
+- **Strict Separation**: Keep client components at the leaves of the tree.
+- **Forbidden**: 
+  - Nested client boundaries (Client component inside a Client component where one could be Server).
+  - Giant "Provider" wrappers that wrap the entire `layout.tsx` (unless absolutely required for global state).
+  - Client-side fetching for data that is available at build time.
+- **Prop Drilling**: Max 3 levels. If you need more, consider a specialized Context or a Server Component refactor.
 
 ---
 
-## Rule 4: 3D Components Must Be Dynamically Imported
+## 3. Data Integrity & Safety
 
-All Three.js / R3F Canvas components **must** use `next/dynamic` with `ssr: false`.
-
-```tsx
-const Car3D = dynamic(() => import("@/components/Car3D"), { ssr: false });
-```
-
-**Additional R3F rules (thermal safety):**
-- `frameloop="demand"` — MANDATORY on all `<Canvas>` elements
-- `dpr={[1, 1.5]}` — MANDATORY. Never `dpr={[1, 2]}`.
-- `powerPreference="default"` — NOT `"high-performance"` (forces discrete GPU)
-- No `<View>` tunneling architecture (deleted in Phase 2)
-- No `<Preload all />` (loads all assets eagerly)
+- **Null-Safe Rendering**: Every component must handle `undefined` or `null` data gracefully.
+- **Skeletons**: Every data-heavy route must have a corresponding `loading.tsx` or `Suspense` boundary.
+- **Error Handling**: Every major feature area must be wrapped in an `ErrorBoundary` or use a route-level `error.tsx`.
 
 ---
 
-## Rule 5: No Global Canvas Architecture
+## 4. API Usage
 
-The singleton `SceneCanvas` with `View.Port` tunneling is **permanently deleted**.
-
-- Each 3D component creates its own `<Canvas>` mounted only when the component is visible
-- Use `IntersectionObserver` (via `react-intersection-observer`) to gate Canvas mounting
-- Unmount Canvas when component leaves the viewport
+- All data fetching must go through the `apiSafe` layer in `lib/api-safe.ts`.
+- Use `fetch` with appropriate caching headers (Next.js `tags` and `revalidate`).
+- **Build Safety**: Data fetching during `pnpm build` must never crash the build. Use fallbacks for environment variables.
 
 ---
 
-## Rule 6: No Animation Wrapper Pyramids
+## 5. Performance Gate
 
-```tsx
-// ❌ BANNED — nested animation providers
-<AnimatePresence>
-  <motion.div>
-    <AnimatePresence>
-      <motion.div>
-        <AnimatePresence>
-          ...
-```
-
-- Max 1 level of `AnimatePresence` per feature
-- Prefer CSS transitions for hover states and simple show/hide
-- Framer Motion reserved for: page transitions, data reveals, complex gesture interactions
-
----
-
-## Rule 7: No Auto-Playing Animations
-
-All animations triggered by:
-- ✅ User action (click, hover, focus)
-- ✅ `IntersectionObserver` (element enters viewport)
-- ❌ Page load (no auto-playing loops)
-- ❌ `setInterval`-driven animation (except countdown timers)
-
-**Banned patterns:**
-```tsx
-// ❌ Infinite CSS animation on static elements
-className="animate-[dash_8s_linear_infinite]"
-className="animate-pulse" // on decorative, non-status elements
-
-// ❌ setTimeout chain for "cinematic sequences"
-setTimeout(() => setStep("SETTLE"), 800);
-setTimeout(() => setStep("REVEAL"), 1200);
-```
-
----
-
-## Rule 8: Suspense Boundaries
-
-- Every async RSC that fetches data must have a `<Suspense>` wrapper with a `<Skeleton>` fallback
-- Skeleton heights must **exactly match** the rendered content height (prevents CLS)
-- Do not nest multiple `<Suspense>` boundaries for the same data dependency
-
----
-
-## Summary Table
-
-| Pattern | Status |
-|---|---|
-| RSC by default | ✅ Required |
-| Dynamic Recharts import | ✅ Required |
-| Dynamic Three.js import | ✅ Required |
-| `frameloop="demand"` on Canvas | ✅ Required |
-| `dpr={[1, 1.5]}` on Canvas | ✅ Required |
-| CSS transitions for nav/hover | ✅ Required |
-| Global canvas (`SceneCanvas`) | ❌ Deleted |
-| `dpr={[1, 2]}` on Canvas | ❌ Banned |
-| `animate-pulse` on decorative UI | ❌ Banned |
-| Infinite CSS animation loops | ❌ Banned |
-| Nested AnimatePresence pyramids | ❌ Banned |
-| `Math.random()` in render | ❌ Banned |
-| setTimeout animation chains | ❌ Banned |
+- **Hydration**: Zero hydration warnings permitted.
+- **Layout Shift**: Ensure all images and dynamic containers have reserved space.
+- **Bundle Size**: Monitor the impact of third-party libraries (e.g., `recharts`, `framer-motion`). Use `dynamic()` imports for heavy client components.

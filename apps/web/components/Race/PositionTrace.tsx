@@ -59,16 +59,16 @@ export function PositionTrace({ telemetry, drivers, currentLap }: PositionTraceP
           <LineChart data={chartData} margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
             <XAxis 
               dataKey="lap" 
-              stroke="#ffffff20" 
+              stroke="rgba(255,255,255,0.12)" 
               fontSize={10} 
               tickLine={false}
               axisLine={false}
-              label={{ value: 'LAP NUMBER', position: 'bottom', fill: '#ffffff40', fontSize: 8, fontWeight: 'bold' }}
+              label={{ value: 'LAP NUMBER', position: 'bottom', fill: 'rgba(255,255,255,0.25)', fontSize: 8, fontWeight: 'bold' }}
             />
             <YAxis 
               reversed 
               domain={[1, 20]} 
-              stroke="#ffffff20" 
+              stroke="rgba(255,255,255,0.12)" 
               fontSize={10} 
               tickLine={false}
               axisLine={false}
@@ -104,19 +104,19 @@ function getPositionFromLap(telemetry: Telemetry[], lap: number, driverId: numbe
 }
 
 function getDriverColor(code: string) {
-  const colors: any = {
-    VER: "#3671C6",
-    HAM: "#6CD3BF",
-    LEC: "#F91536",
-    NOR: "#FF8000",
-    ALO: "#229971",
-    SAI: "#F91536",
-    PIA: "#FF8000",
-    RUS: "#6CD3BF",
-    PER: "#3671C6",
-    HUL: "#B6BABD"
+  const mapping: Record<string, string> = {
+    VER: "var(--color-team-redbull)",
+    PER: "var(--color-team-redbull)",
+    HAM: "var(--color-team-mercedes)",
+    RUS: "var(--color-team-mercedes)",
+    LEC: "var(--color-team-ferrari)",
+    SAI: "var(--color-team-ferrari)",
+    NOR: "var(--color-team-mclaren)",
+    PIA: "var(--color-team-mclaren)",
+    ALO: "var(--color-team-astonmartin)",
+    HUL: "var(--color-team-haas)",
   };
-  return colors[code] || "#ffffff40";
+  return mapping[code] || "var(--color-text-muted)";
 }
 
 const CustomTooltip = ({ active, payload, label }: any) => {

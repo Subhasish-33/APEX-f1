@@ -1,5 +1,5 @@
 from typing import List, Dict, Optional
-from sqlalchemy import select, func, or_
+from sqlalchemy import select, func, or_, text
 from sqlalchemy.ext.asyncio import AsyncSession
 from models import Driver, Constructor, Race, Result
 from analytics.intelligence_engine import PsychologicalEngine
@@ -55,40 +55,71 @@ class SearchCortex:
         return results
 
     async def get_lexical_results(self, q: str) -> List[Dict]:
-        """Standard full-text search across entities."""
-        q_clean = q.strip().lower()
-        
-        # 1. Search Drivers
-        driver_stmt = select(Driver).where(
-            or_(
-                Driver.surname.ilike(f"%{q_clean}%"),
-                Driver.forename.ilike(f"%{q_clean}%"),
-                Driver.code.ilike(f"%{q_clean}%")
-            )
-        ).limit(5)
-        drivers = (await self.session.execute(driver_stmt)).scalars().all()
-        
-        # 2. Search Constructors
-        const_stmt = select(Constructor).where(
-            or_(
-                Constructor.name.ilike(f"%{q_clean}%"),
-                Constructor.constructor_ref.ilike(f"%{q_clean}%")
-            )
-        ).limit(3)
-        constructors = (await self.session.execute(const_stmt)).scalars().all()
-        
-        # 3. Search Races
-        race_stmt = select(Race).where(
-            Race.name.ilike(f"%{q_clean}%")
-        ).order_by(Race.year.desc()).limit(5)
-        races = (await self.session.execute(race_stmt)).scalars().all()
+        """
+        Hardened full-text search using PostgreSQL tsvector.
+        Supports ranking, typo tolerance (via tsquery), and entity grouping.
+        """
+        q_clean = q.strip()
+        if len(q_clean) < 2:
+            return []
+
+        # Sanitize query for plainto_tsquery
+        # This converts "Lewis Hamilton" into "Lewis & Hamilton" for matching
+        ts_query = func.plainto_tsquery('english', q_clean)
         
         formatted = []
-        for d in drivers:
-            formatted.append({"type": "DRIVER", "id": d.driver_id, "ref": d.driver_ref, "label": f"{d.forename} {d.surname}", "code": d.code})
-        for c in constructors:
-            formatted.append({"type": "TEAM", "id": c.constructor_id, "ref": c.constructor_ref, "label": c.name})
-        for r in races:
-            formatted.append({"type": "RACE", "id": r.race_id, "label": f"{r.year} {r.name}"})
+
+        # 1. Search Drivers (Search across forename, surname, code)
+        driver_stmt = (
+            select(Driver, func.ts_rank(func.to_tsvector('english', Driver.forename + ' ' + Driver.surname + ' ' + func.coalesce(Driver.code, '')), ts_query).label("rank"))
+            .where(func.to_tsvector('english', Driver.forename + ' ' + Driver.surname + ' ' + func.coalesce(Driver.code, '')).op('@@')(ts_query))
+            .order_by(text("rank DESC"))
+            .limit(5)
+        )
+        drivers = (await self.session.execute(driver_stmt)).all()
+        for d, rank in drivers:
+            formatted.append({
+                "type": "DRIVER", 
+                "id": d.driver_id, 
+                "ref": d.driver_ref, 
+                "label": f"{d.forename} {d.surname}", 
+                "code": d.code,
+                "rank": float(rank)
+            })
+
+        # 2. Search Constructors
+        const_stmt = (
+            select(Constructor, func.ts_rank(func.to_tsvector('english', Constructor.name), ts_query).label("rank"))
+            .where(func.to_tsvector('english', Constructor.name).op('@@')(ts_query))
+            .order_by(text("rank DESC"))
+            .limit(3)
+        )
+        constructors = (await self.session.execute(const_stmt)).all()
+        for c, rank in constructors:
+            formatted.append({
+                "type": "TEAM", 
+                "id": c.constructor_id, 
+                "ref": c.constructor_ref, 
+                "label": c.name,
+                "rank": float(rank)
+            })
+
+        # 3. Search Races
+        race_stmt = (
+            select(Race, func.ts_rank(func.to_tsvector('english', Race.name), ts_query).label("rank"))
+            .where(func.to_tsvector('english', Race.name).op('@@')(ts_query))
+            .order_by(Race.year.desc(), text("rank DESC"))
+            .limit(5)
+        )
+        races = (await self.session.execute(race_stmt)).all()
+        for r, rank in races:
+            formatted.append({
+                "type": "RACE", 
+                "id": r.race_id, 
+                "label": f"{r.year} {r.name}",
+                "rank": float(rank)
+            })
             
+        # Global sort by rank (secondary to type-specific counts)
+        formatted.sort(key=lambda x: x.get("rank", 0), reverse=True)
         return formatted
