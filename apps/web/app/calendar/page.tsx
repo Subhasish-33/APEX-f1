@@ -8,9 +8,11 @@ import { SeasonSelector } from "../../components/SeasonSelector";
 import { Loader2, Calendar as CalendarIcon } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 
-export default function CalendarPage() {
+import { Suspense } from "react";
+
+function CalendarContent() {
   const searchParams = useSearchParams();
-  const year = Number(searchParams.get("year")) || 2025;
+  const year = Number(searchParams.get("year")) || 2024; // Default to 2024 for stable data
   
   const [races, setRaces] = useState<Race[]>([]);
   const [loading, setLoading] = useState(true);
@@ -108,6 +110,18 @@ export default function CalendarPage() {
         )}
       </div>
     </main>
+  );
+}
+
+export default function CalendarPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-[var(--color-bg-primary)] flex items-center justify-center">
+        <Loader2 className="w-12 h-12 text-[var(--color-f1-red)] animate-spin" />
+      </div>
+    }>
+      <CalendarContent />
+    </Suspense>
   );
 }
 

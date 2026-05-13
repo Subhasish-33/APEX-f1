@@ -5,6 +5,7 @@ export interface Driver {
   forename: string;
   surname: string;
   nationality: string;
+  number?: number;
 }
 
 export interface Constructor {
