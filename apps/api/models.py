@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Float, ForeignKey, Date, DateTime, UniqueConstraint, JSON, Boolean
+from sqlalchemy import Column, Integer, String, Float, ForeignKey, Date, DateTime, UniqueConstraint, JSON, Boolean, Text
 from sqlalchemy.orm import declarative_base, relationship
 from datetime import datetime
 
@@ -341,3 +341,31 @@ class MLFeature(Base):
 
     race = relationship("Race")
     driver = relationship("Driver")
+
+class SyncLog(Base):
+    __tablename__ = "sync_logs"
+
+    id = Column(Integer, primary_key=True, index=True)
+    provider = Column(String, index=True)  # JOLPICA, OPENF1, etc.
+    endpoint = Column(String)
+    sync_type = Column(String, index=True) # HISTORICAL, LIVE, SCHEDULE, etc.
+    status = Column(String, index=True)    # STARTED, COMPLETED, FAILED, RETRYING
+    
+    started_at = Column(DateTime, default=datetime.utcnow)
+    completed_at = Column(DateTime, nullable=True)
+    duration_ms = Column(Integer, nullable=True)
+    
+    records_processed = Column(Integer, default=0)
+    records_updated = Column(Integer, default=0)
+    records_failed = Column(Integer, default=0)
+    
+    error_message = Column(Text, nullable=True)
+    retry_count = Column(Integer, default=0)
+    source_version = Column(String, nullable=True) # ETag, Hash, etc.
+    
+    certification_status = Column(String, default="PENDING") # PENDING, AUDITED, CERTIFIED
+    
+    last_updated = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    def __repr__(self):
+        return f"<SyncLog(id={self.id}, provider='{self.provider}', status='{self.status}')>"
