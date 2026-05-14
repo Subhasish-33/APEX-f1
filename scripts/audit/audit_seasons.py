@@ -15,7 +15,10 @@ async def audit_seasons():
     print("--- APEX-F1 DETERMINISTIC AUDIT: SEASONS ---")
     
     # Handle PgBouncer/Supabase connection constraints
-    engine = create_async_engine(DATABASE_URL, connect_args={'prepared_statement_cache_size': 0})
+    engine = create_async_engine(DATABASE_URL, connect_args={
+        'prepared_statement_cache_size': 0,
+        'statement_cache_size': 0
+    })
     
     async with engine.connect() as conn:
         # 1. Total Season Count

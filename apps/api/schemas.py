@@ -277,6 +277,15 @@ class TelemetryResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
+class SeasonResponse(BaseModel):
+    year: int
+    status: str
+    is_verified: bool
+    coverage_confidence: float
+    last_audit_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
 class PlatformHealthResponse(BaseModel):
     id: int
     timestamp: datetime
@@ -289,6 +298,10 @@ class PlatformHealthResponse(BaseModel):
 
 class UnifiedStandingsResponse(BaseModel):
     season: int
+    status: str
+    is_verified: bool
+    coverage_confidence: float
+    last_audit_at: datetime
     last_race_id: Optional[int] = None
     last_race_name: Optional[str] = None
     drivers: List[DriverStandingResponse]

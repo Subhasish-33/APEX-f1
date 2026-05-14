@@ -1,33 +1,73 @@
 import Link from "next/link";
 import { api } from "@/lib/api";
+import { CheckCircle2, AlertCircle, Info } from "lucide-react";
 
 export default async function StandingsWidget() {
   const year = 2024;
-  const standings = await api.getSeasonStandings(year);
-  const top5 = standings.data.slice(0, 5);
+  const standings = await api.getUnifiedStandings(year);
+  const top5 = standings.drivers.slice(0, 5);
+
+  const getStatusConfig = (status: string) => {
+    switch (status) {
+      case "VERIFIED":
+        return { 
+          icon: <CheckCircle2 className="w-3 h-3 text-emerald-400" />, 
+          label: "Verified Truth", 
+          bg: "bg-emerald-500/10", 
+          border: "border-emerald-500/20",
+          text: "text-emerald-400"
+        };
+      case "PARTIAL":
+        return { 
+          icon: <AlertCircle className="w-3 h-3 text-amber-400" />, 
+          label: "Partial Data", 
+          bg: "bg-amber-500/10", 
+          border: "border-amber-500/20",
+          text: "text-amber-400"
+        };
+      default:
+        return { 
+          icon: <Info className="w-3 h-3 text-gray-400" />, 
+          label: "Archival", 
+          bg: "bg-white/5", 
+          border: "border-white/10",
+          text: "text-gray-400"
+        };
+    }
+  };
+
+  const status = getStatusConfig(standings.status);
 
   return (
     <div className="bg-white/5 border border-white/10 rounded-sm overflow-hidden h-full flex flex-col">
       <div className="px-6 py-4 border-b border-white/10 flex justify-between items-center bg-white/[0.02]">
-        <h3 className="text-white font-black uppercase tracking-tighter text-lg italic">
-          Driver <span className="text-f1-red">Standings</span>
-        </h3>
+        <div className="flex items-center gap-3">
+          <h3 className="text-white font-black uppercase tracking-tighter text-lg italic">
+            Driver <span className="text-f1-red">Standings</span>
+          </h3>
+          <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full border ${status.bg} ${status.border}`}>
+            {status.icon}
+            <span className={`text-[8px] font-black uppercase tracking-widest ${status.text}`}>
+              {status.label}
+            </span>
+          </div>
+        </div>
         <Link href="/standings" className="text-[10px] uppercase font-bold text-gray-500 hover:text-white transition-colors">
           View All
         </Link>
       </div>
 
-      {standings.freshness && (
-        <div className="px-6 py-2 bg-f1-red/5 border-b border-f1-red/10 flex items-center justify-between">
-           <div className="flex items-center gap-2">
-              <div className="w-1.5 h-1.5 rounded-full bg-f1-red animate-pulse shadow-[0_0_8px_rgba(255,24,1,0.5)]" />
-              <span className="text-[9px] font-black uppercase tracking-widest text-f1-red/80">APEX Intelligence • Live Truth</span>
-           </div>
-           <span className="text-[8px] font-bold text-gray-400 uppercase tabular-nums">
-              Pulsed: {new Date(standings.freshness).toLocaleTimeString()}
-           </span>
-        </div>
-      )}
+      <div className="px-6 py-2 bg-f1-red/5 border-b border-f1-red/10 flex items-center justify-between">
+         <div className="flex items-center gap-2">
+            <div className="w-1.5 h-1.5 rounded-full bg-f1-red animate-pulse shadow-[0_0_8px_rgba(255,24,1,0.5)]" />
+            <span className="text-[9px] font-black uppercase tracking-widest text-f1-red/80">
+              APEX Intelligence • {Math.round(standings.coverage_confidence * 100)}% Confidence
+            </span>
+         </div>
+         <span className="text-[8px] font-bold text-gray-400 uppercase tabular-nums">
+            Pulsed: {new Date(standings.freshness).toLocaleTimeString()}
+         </span>
+      </div>
 
       <div className="divide-y divide-white/5 flex-grow">
         {top5.length > 0 ? (

@@ -52,6 +52,12 @@ class Season(Base):
     __tablename__ = "seasons"
 
     year = Column(Integer, primary_key=True)
+    
+    # Action 1: Coverage Confidence & Safety Pass
+    status = Column(String, default="ARCHIVAL") # VERIFIED, PARTIAL, ARCHIVAL
+    is_verified = Column(Boolean, default=False)
+    coverage_confidence = Column(Float, default=0.0) # 0.0 to 1.0
+    last_audit_at = Column(DateTime)
 
 class Race(Base):
     __tablename__ = "races"

@@ -10,7 +10,9 @@ import {
   Prediction,
   Circuit,
   Telemetry,
+  Telemetry,
   SeasonIntelligence,
+  UnifiedStandings,
 } from "@apex/types";
 import { API_BASE_URL, DEFAULT_REVALIDATE } from "@/lib/config";
 
@@ -83,6 +85,9 @@ export const api = {
 
   getSeasonConstructorStandings: (year: number) =>
     fetcher<PaginatedResponse<ConstructorStanding>>(`/seasons/${year}/standings/constructors`),
+
+  getUnifiedStandings: (year: number) =>
+    fetcher<UnifiedStandings>(`/seasons/${year}/standings/unified`),
 
   getConstructorHistory: (ref: string) =>
     fetcher<ConstructorHistoryEntry[]>(`/constructors/${ref}/history`),

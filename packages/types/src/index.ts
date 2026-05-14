@@ -171,3 +171,23 @@ export interface SeasonIntelligence {
   rivalries: Rivalry[];
   storylines: string[];
 }
+export interface Season {
+  year: number;
+  status: string;
+  is_verified: boolean;
+  coverage_confidence: number;
+  last_audit_at: string;
+}
+
+export interface UnifiedStandings {
+  season: number;
+  status: string;
+  is_verified: boolean;
+  coverage_confidence: number;
+  last_audit_at: string;
+  last_race_id?: number;
+  last_race_name?: string;
+  drivers: DriverStanding[];
+  constructors: ConstructorStanding[];
+  freshness: string;
+}
