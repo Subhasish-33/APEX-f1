@@ -5,14 +5,14 @@ from dependencies import get_db
 from sqlalchemy import text, select, func
 from sqlalchemy.orm import selectinload
 from models import DriverStanding, ConstructorStanding, Race, Driver, Constructor
-from schemas import DriverStandingResponse, ConstructorStandingResponse
+from schemas import DriverStandingResponse, ConstructorStandingResponse, UnifiedStandingsResponse
 from cache import cached
+from datetime import datetime
 
 router = APIRouter()
 DBSession = Annotated[AsyncSession, Depends(get_db)]
 
-@router.get("/standings")
-@cached(ttl=3600, key_prefix="unified_standings")
+@router.get("/standings", response_model=UnifiedStandingsResponse)
 async def get_unified_standings(
     session: DBSession,
     season: int = Query(2024)
@@ -23,16 +23,25 @@ async def get_unified_standings(
     """
     # 1. Find the latest race in that season that has results
     latest_race_stmt = (
-        select(Race.race_id)
+        select(Race)
         .where(Race.year == season)
         .join(DriverStanding, Race.race_id == DriverStanding.race_id)
         .order_by(Race.round.desc())
         .limit(1)
     )
-    latest_race_id = await session.scalar(latest_race_stmt)
+    latest_race = await session.scalar(latest_race_stmt)
     
-    if not latest_race_id:
-        return {"season": season, "drivers": [], "constructors": []}
+    if not latest_race:
+        return {
+            "season": season, 
+            "last_race_id": None,
+            "last_race_name": None,
+            "drivers": [], 
+            "constructors": [],
+            "freshness": datetime.utcnow()
+        }
+
+    latest_race_id = latest_race.race_id
 
     from models import Result
     # 2. Get Driver Standings
@@ -59,10 +68,18 @@ async def get_unified_standings(
     )
     constructor_results = (await session.execute(constructors_stmt)).scalars().all()
 
+    # 4. Calculate Freshness
+    all_dates = [s.last_updated for s in driver_results if s.last_updated] + \
+                [c.last_updated for c in constructor_results if c.last_updated]
+    freshness = max(all_dates) if all_dates else datetime.utcnow()
+
     return {
         "season": season,
+        "last_race_id": latest_race_id,
+        "last_race_name": latest_race.name,
         "drivers": driver_results,
-        "constructors": constructor_results
+        "constructors": constructor_results,
+        "freshness": freshness
     }
 
 @router.get("/standings/drivers")

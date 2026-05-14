@@ -122,6 +122,7 @@ export interface PaginatedResponse<T> {
   page: number;
   limit: number;
   data: T[];
+  freshness?: string;
 }
 
 export interface ConstructorHistoryEntry {

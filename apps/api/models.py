@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Float, ForeignKey, Date, DateTime, UniqueConstraint, JSON
+from sqlalchemy import Column, Integer, String, Float, ForeignKey, Date, DateTime, UniqueConstraint, JSON, Boolean
 from sqlalchemy.orm import declarative_base, relationship
 from datetime import datetime
 
@@ -74,6 +74,14 @@ class Race(Base):
     # Analytics
     analytics = Column(JSON) # {overtaking_index: 0.8, chaos_prob: 0.2, etc.}
 
+    # Phase 3: State Intelligence & Freshness
+    status = Column(String, default="SCHEDULED") # SCHEDULED, PENDING, LIVE, COMPLETED, ARCHIVED, CANCELED
+    telemetry_available = Column(Boolean, default=False)
+    last_updated = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    ingestion_version = Column(String)
+
+    __table_args__ = (UniqueConstraint("year", "round", name="uq_race_year_round"),)
+
     circuit = relationship("Circuit")
     results = relationship("Result", back_populates="race")
     driver_standings = relationship("DriverStanding", back_populates="race")
@@ -96,8 +104,14 @@ class Result(Base):
     fastest_lap = Column(Integer)
     fastest_lap_time = Column(String)
     status = Column(String)
+    
+    # Freshness
+    last_updated = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-    __table_args__ = (UniqueConstraint("race_id", "driver_id", name="uq_race_driver_result"),)
+    __table_args__ = (
+        UniqueConstraint("race_id", "driver_id", name="uq_race_driver_result"),
+        UniqueConstraint("race_id", "position", name="uq_race_position_result"),
+    )
 
     race = relationship("Race", back_populates="results")
     driver = relationship("Driver", back_populates="results")
@@ -112,6 +126,9 @@ class DriverStanding(Base):
     points = Column(Float)
     position = Column(Integer)
     wins = Column(Integer, default=0)
+    
+    # Freshness
+    last_updated = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     __table_args__ = (UniqueConstraint("race_id", "driver_id", name="uq_race_driver_standing"),)
 
@@ -127,6 +144,9 @@ class ConstructorStanding(Base):
     points = Column(Float)
     position = Column(Integer)
     wins = Column(Integer, default=0)
+    
+    # Freshness
+    last_updated = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     __table_args__ = (UniqueConstraint("race_id", "constructor_id", name="uq_race_constructor_standing"),)
 
@@ -166,6 +186,24 @@ class PitStop(Base):
 
     race = relationship("Race", back_populates="pit_stops")
     driver = relationship("Driver", back_populates="pit_stops")
+
+class Stint(Base):
+    """Telemetry Readiness: Strategy & Tire Data"""
+    __tablename__ = "stints"
+
+    id = Column(Integer, primary_key=True)
+    race_id = Column(Integer, ForeignKey("races.race_id"))
+    driver_id = Column(Integer, ForeignKey("drivers.driver_id"))
+    stint_number = Column(Integer)
+    compound = Column(String)
+    start_lap = Column(Integer)
+    end_lap = Column(Integer)
+    tyre_age_at_start = Column(Integer)
+    
+    last_updated = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    race = relationship("Race")
+    driver = relationship("Driver")
 
 class LapTime(Base):
     __tablename__ = "lap_times"
@@ -252,6 +290,17 @@ class Telemetry(Base):
     speed_trap = Column(Float)
     weather_temp = Column(Float)
     track_temp = Column(Float)
+
+class PlatformHealth(Base):
+    """Observability: Tracking ingestion health and drift"""
+    __tablename__ = "platform_health"
+
+    id = Column(Integer, primary_key=True)
+    timestamp = Column(DateTime, default=datetime.utcnow)
+    component = Column(String) # INGESTION, API, CACHE, RECONCILIATION
+    status = Column(String) # OK, WARNING, CRITICAL
+    message = Column(String)
+    metadata_json = Column(JSON)
 class RaceMoment(Base):
     __tablename__ = "race_moments"
 

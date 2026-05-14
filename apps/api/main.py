@@ -9,7 +9,8 @@ from routes import (
     analytics, 
     constructors, 
     predictions, 
-    standings
+    standings,
+    health
 )
 from db import engine
 from models import Base
@@ -46,11 +47,8 @@ app.include_router(seasons.router, tags=["Seasons"])
 app.include_router(analytics.router, tags=["Analytics"])
 app.include_router(predictions.router, tags=["Predictions"])
 app.include_router(standings.router, tags=["Standings"])
+app.include_router(health.router, tags=["Platform Health"])
 
 @app.get("/")
 async def root():
     return {"status": "ok", "service": "APEX-F1 API"}
-
-@app.get("/health")
-async def health():
-    return {"status": "ok"}

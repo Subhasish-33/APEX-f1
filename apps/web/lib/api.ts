@@ -95,4 +95,7 @@ export const api = {
 
   getPrediction: (raceId: number) =>
     fetcher<Prediction[]>(`/predictions/${raceId}`).catch(() => []), // Fallback if not implemented yet
+
+  getPlatformStatus: () =>
+    fetcher<any>("/platform"),
 };

@@ -9,6 +9,7 @@ class PaginatedResponse(BaseModel, Generic[T]):
     page: int
     limit: int
     data: List[T]
+    freshness: Optional[datetime] = None
 
 class DriverResponse(BaseModel):
     driver_id: int
@@ -64,6 +65,12 @@ class RaceResponse(BaseModel):
     # Analytics
     analytics: Optional[dict] = None
 
+    # Phase 3: State Intelligence & Freshness
+    status: str = "SCHEDULED"
+    telemetry_available: bool = False
+    last_updated: Optional[datetime] = None
+    ingestion_version: Optional[str] = None
+
     circuit: Optional[CircuitResponse] = None
 
     model_config = ConfigDict(from_attributes=True)
@@ -81,6 +88,7 @@ class ResultResponse(BaseModel):
     fastest_lap: Optional[int] = None
     fastest_lap_time: Optional[str] = None
     status: Optional[str] = None
+    last_updated: Optional[datetime] = None
     
     driver: Optional[DriverResponse] = None
     constructor: Optional[ConstructorResponse] = None
@@ -93,6 +101,7 @@ class DriverStandingResponse(BaseModel):
     driver_id: int
     points: float
     position: int
+    last_updated: Optional[datetime] = None
     
     driver: Optional[DriverResponse] = None
     constructor: Optional[ConstructorResponse] = None
@@ -105,6 +114,7 @@ class ConstructorStandingResponse(BaseModel):
     constructor_id: int
     points: float
     position: int
+    last_updated: Optional[datetime] = None
 
     constructor: Optional[ConstructorResponse] = None
 
@@ -138,6 +148,19 @@ class PitStopResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
+class StintResponse(BaseModel):
+    id: int
+    race_id: int
+    driver_id: int
+    stint_number: int
+    compound: str
+    start_lap: int
+    end_lap: int
+    tyre_age_at_start: int
+    last_updated: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
 class RaceMomentResponse(BaseModel):
     id: int
     race_id: int
@@ -163,6 +186,7 @@ class RaceDetailResponse(RaceResponse):
     results: List[ResultResponse] = []
     qualifying: List[QualifyingResponse] = []
     pit_stops: List[PitStopResponse] = []
+    stints: List[StintResponse] = []
     moments: List[RaceMomentResponse] = []
 
     model_config = ConfigDict(from_attributes=True)
@@ -252,4 +276,22 @@ class TelemetryResponse(BaseModel):
     track_temp: Optional[float] = None
 
     model_config = ConfigDict(from_attributes=True)
+
+class PlatformHealthResponse(BaseModel):
+    id: int
+    timestamp: datetime
+    component: str
+    status: str
+    message: str
+    metadata_json: Optional[dict] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+class UnifiedStandingsResponse(BaseModel):
+    season: int
+    last_race_id: Optional[int] = None
+    last_race_name: Optional[str] = None
+    drivers: List[DriverStandingResponse]
+    constructors: List[ConstructorStandingResponse]
+    freshness: datetime
 

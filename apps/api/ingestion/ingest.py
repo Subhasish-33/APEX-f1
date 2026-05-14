@@ -20,6 +20,17 @@ logger = logging.getLogger(__name__)
 
 BASE_URL = "https://api.jolpi.ca/ergast/f1"
 CURRENT_YEAR = datetime.now().year
+INGESTION_VERSION = "3.0.0"
+
+def get_race_status(race_date, year):
+    now = datetime.now().date()
+    if year > now.year:
+        return "SCHEDULED"
+    if race_date < now:
+        return "COMPLETED"
+    if race_date == now:
+        return "LIVE"
+    return "SCHEDULED"
 
 @retry(
     stop=stop_after_attempt(5),
@@ -205,13 +216,20 @@ async def ingest_races():
                 qual = r.get("Qualifying", {})
                 sprint = r.get("Sprint", {})
 
+                race_date = datetime.strptime(r.get("date"), "%Y-%m-%d").date()
+                status = get_race_status(race_date, int(r.get("season")))
+
                 stmt = insert(Race).values(
                     race_id=race_id,
                     year=int(r.get("season")),
                     round=int(r.get("round")),
                     circuit_id=r.get("Circuit", {}).get("circuitId"),
                     name=r.get("raceName"),
-                    date=datetime.strptime(r.get("date"), "%Y-%m-%d").date(),
+                    date=race_date,
+                    status=status,
+                    telemetry_available=(status == "COMPLETED" and int(r.get("season")) >= 2018),
+                    last_updated=datetime.now(),
+                    ingestion_version=INGESTION_VERSION,
                     laps=int(r.get("laps", 0)) if r.get("laps") else None,
                     fp1_date=parse_dt(fp1.get("date"), fp1.get("time")),
                     fp2_date=parse_dt(fp2.get("date"), fp2.get("time")),
@@ -224,6 +242,10 @@ async def ingest_races():
                     set_={
                         "name": stmt.excluded.name,
                         "date": stmt.excluded.date,
+                        "status": stmt.excluded.status,
+                        "telemetry_available": stmt.excluded.telemetry_available,
+                        "last_updated": stmt.excluded.last_updated,
+                        "ingestion_version": stmt.excluded.ingestion_version,
                         "circuit_id": stmt.excluded.circuit_id,
                         "laps": stmt.excluded.laps,
                         "fp1_date": stmt.excluded.fp1_date,
@@ -263,7 +285,8 @@ async def ingest_results(target_year=None):
                         milliseconds=int(res.get("Time", {}).get("millis", 0)) if res.get("Time", {}).get("millis") else None,
                         fastest_lap=int(res.get("FastestLap", {}).get("lap", 0)) if res.get("FastestLap", {}).get("lap") else None,
                         fastest_lap_time=res.get("FastestLap", {}).get("Time", {}).get("time"),
-                        status=res.get("status")
+                        status=res.get("status"),
+                        last_updated=datetime.now()
                     )
                     await s.execute(stmt.on_conflict_do_update(
                         constraint="uq_race_driver_result",
@@ -276,7 +299,8 @@ async def ingest_results(target_year=None):
                             "milliseconds": stmt.excluded.milliseconds,
                             "fastest_lap": stmt.excluded.fastest_lap,
                             "fastest_lap_time": stmt.excluded.fastest_lap_time,
-                            "status": stmt.excluded.status
+                            "status": stmt.excluded.status,
+                            "last_updated": stmt.excluded.last_updated
                         }
                     ))
             await s.commit()
@@ -333,13 +357,15 @@ async def ingest_driver_standings(target_year=None):
                         race_id=race_id,
                         driver_id=d_id,
                         points=float(d.get("points", 0)),
-                        position=int(d.get("position", 0))
+                        position=int(d.get("position", 0)),
+                        last_updated=datetime.now()
                     )
                     await s.execute(stmt.on_conflict_do_update(
                         constraint="uq_race_driver_standing",
                         set_={
                             "points": stmt.excluded.points,
-                            "position": stmt.excluded.position
+                            "position": stmt.excluded.position,
+                            "last_updated": stmt.excluded.last_updated
                         }
                     ))
             await s.commit()
@@ -360,13 +386,15 @@ async def ingest_constructor_standings():
                         race_id=race_id,
                         constructor_id=c_id,
                         points=float(c.get("points", 0)),
-                        position=int(c.get("position", 0))
+                        position=int(c.get("position", 0)),
+                        last_updated=datetime.now()
                     )
                     await s.execute(stmt.on_conflict_do_update(
                         constraint="uq_race_constructor_standing",
                         set_={
                             "points": stmt.excluded.points,
-                            "position": stmt.excluded.position
+                            "position": stmt.excluded.position,
+                            "last_updated": stmt.excluded.last_updated
                         }
                     ))
             await s.commit()

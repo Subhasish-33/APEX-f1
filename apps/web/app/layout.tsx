@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
+import PlatformStatusBar from "@/components/PlatformStatusBar";
 import Footer from "@/components/Footer";
 import { Analytics } from "@vercel/analytics/react";
 
@@ -47,6 +48,7 @@ export default function RootLayout({
       className={`${inter.variable} ${barlowCondensed.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] font-sans">
+        <PlatformStatusBar />
         <Navbar />
         <main className="flex-grow relative z-10">{children}</main>
         <Footer />
