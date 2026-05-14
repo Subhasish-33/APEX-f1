@@ -237,8 +237,9 @@ async def ingest_races():
             await s.commit()
     logger.info(f"Races complete. Total: {total_races}")
 
-async def ingest_results():
-    for year in range(2010, CURRENT_YEAR + 1):
+async def ingest_results(target_year=None):
+    years = [target_year] if target_year else range(2010, CURRENT_YEAR + 1)
+    for year in years:
         logger.info(f"Ingesting results for {year}...")
         items = await fetch_all(f"{year}/results.json", ["RaceTable", "Races"])
         if not items: continue
@@ -315,8 +316,9 @@ async def ingest_qualifying():
                     ))
             await s.commit()
 
-async def ingest_driver_standings():
-    for year in range(2010, CURRENT_YEAR + 1):
+async def ingest_driver_standings(target_year=None):
+    years = [target_year] if target_year else range(2010, CURRENT_YEAR + 1)
+    for year in years:
         logger.info(f"Ingesting driver standings for {year}...")
         items = await fetch_all(f"{year}/driverStandings.json", ["StandingsTable", "StandingsLists"])
         if not items: continue
