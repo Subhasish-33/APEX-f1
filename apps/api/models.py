@@ -447,10 +447,9 @@ class SyncLog(Base):
 
     def __repr__(self):
         return f"<SyncLog(id={self.id}, provider='{self.provider}', status='{self.status}')>"
-<<<<<<< HEAD
-=======
 
 class MediaAsset(Base):
+
     """
     Tier 5 — Canonical Media Registry.
 
