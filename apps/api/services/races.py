@@ -70,7 +70,7 @@ class RaceService:
             raise ResourceNotFoundException(f"Race '{slug_or_id}' not found.")
 
         # Determine state
-        latest_session_stmt = select(Session.state).where(Session.race_id == race.race_id).order_by(Session.session_key.desc()).limit(1)
+        latest_session_stmt = select(Session.state).where(Session.race_id == race.race_id).order_by(Session.id.desc()).limit(1)
         latest_state = await self.db.scalar(latest_session_stmt)
         
         certification = CertificationState.CERTIFIED
