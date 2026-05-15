@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function Footer() {
   return (
     <footer className="bg-[var(--color-bg-primary)] border-t border-white/5 pt-16 pb-12">
@@ -15,19 +17,19 @@ export default function Footer() {
           <div>
             <h3 className="text-[var(--color-text-primary)] font-black uppercase tracking-widest text-xs mb-6 italic">Platform</h3>
             <ul className="space-y-3 text-[var(--color-text-muted)] text-[10px] font-bold uppercase tracking-wider">
-              <li className="hover:text-[var(--color-f1-red)] transition-ui cursor-pointer">Drivers</li>
-              <li className="hover:text-[var(--color-f1-red)] transition-ui cursor-pointer">Teams</li>
-              <li className="hover:text-[var(--color-f1-red)] transition-ui cursor-pointer">Calendar</li>
-              <li className="hover:text-[var(--color-f1-red)] transition-ui cursor-pointer">Standings</li>
+              <li><Link href="/drivers" className="hover:text-[var(--color-f1-red)] transition-ui">Drivers</Link></li>
+              <li><Link href="/teams" className="hover:text-[var(--color-f1-red)] transition-ui">Teams</Link></li>
+              <li><Link href="/calendar" className="hover:text-[var(--color-f1-red)] transition-ui">Calendar</Link></li>
+              <li><Link href="/standings" className="hover:text-[var(--color-f1-red)] transition-ui">Standings</Link></li>
             </ul>
           </div>
           <div>
             <h3 className="text-[var(--color-text-primary)] font-black uppercase tracking-widest text-xs mb-6 italic">Data Core</h3>
             <ul className="space-y-3 text-[var(--color-text-muted)] text-[10px] font-bold uppercase tracking-wider">
-              <li className="hover:text-[var(--color-f1-red)] transition-ui cursor-pointer">Historical API</li>
-              <li className="hover:text-[var(--color-f1-red)] transition-ui cursor-pointer">Predictions</li>
-              <li className="hover:text-[var(--color-f1-red)] transition-ui cursor-pointer">Pit Telemetry</li>
-              <li className="hover:text-[var(--color-f1-red)] transition-ui cursor-pointer">Circuit DNA</li>
+              <li><Link href="/news" className="hover:text-[var(--color-f1-red)] transition-ui">Newsroom</Link></li>
+              <li><Link href="/predictions" className="hover:text-[var(--color-f1-red)] transition-ui">Predictions</Link></li>
+              <li><Link href="/live" className="hover:text-[var(--color-f1-red)] transition-ui">Live Telemetry</Link></li>
+              <li><Link href="/calendar" className="hover:text-[var(--color-f1-red)] transition-ui">Circuit DNA</Link></li>
             </ul>
           </div>
         </div>

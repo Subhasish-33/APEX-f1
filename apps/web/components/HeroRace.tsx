@@ -1,5 +1,6 @@
 import { api } from "@/lib/api";
 import CountdownTimer from "./CountdownTimer";
+import Link from "next/link";
 
 export default async function HeroRace() {
   const year = 2025;
@@ -21,58 +22,77 @@ export default async function HeroRace() {
 
   const isPast = new Date(nextRace.date) < now;
 
+  const titleParts = nextRace?.name?.split(" ") ?? ["Apex", "Grand", "Prix"];
+
   return (
-    <div className="relative bg-[var(--color-bg-primary)] py-16 sm:py-32 border-b border-white/5 overflow-hidden">
-      {/* Background decoration */}
-      <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-[var(--color-f1-red)]/10 to-transparent skew-x-12 transform translate-x-20" />
-      
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-16">
-          <div className="flex-1">
-            <div className="flex items-center gap-2 mb-6">
-              <span className="bg-[var(--color-f1-red)] text-white text-[10px] font-black uppercase tracking-[0.2em] px-3 py-1 rounded-sm italic">
+    <section className="relative min-h-[calc(100vh-7.25rem)] overflow-hidden bg-black border-b border-white/10">
+      <video
+        className="absolute inset-0 h-full w-full object-cover opacity-45"
+        src="/videos/hero.mp4"
+        autoPlay
+        muted
+        loop
+        playsInline
+      />
+      <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(0,0,0,0.92)_0%,rgba(0,0,0,0.72)_42%,rgba(0,0,0,0.16)_100%)]" />
+      <div className="absolute inset-0 telemetry-grid opacity-20" />
+
+      <div className="relative z-10 max-w-7xl mx-auto min-h-[calc(100vh-7.25rem)] px-4 sm:px-6 lg:px-8 flex flex-col justify-end pb-10 sm:pb-16">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-end">
+          <div className="lg:col-span-8">
+            <div className="flex flex-wrap items-center gap-3 mb-8">
+              <span className="bg-[var(--color-f1-red)] text-white text-[10px] font-black uppercase tracking-[0.22em] px-3 py-1 rounded-sm italic">
                 {isPast ? "Latest Grand Prix" : "Next Grand Prix"}
               </span>
-              <div className="h-[1px] w-12 bg-white/20" />
+              <span className="text-white/50 text-[10px] font-black uppercase tracking-[0.3em]">
+                Round {nextRace?.round ?? "–"} / {nextRace?.year ?? "2025"}
+              </span>
             </div>
-            <h1 className="text-5xl sm:text-8xl font-display font-black text-[var(--color-text-primary)] uppercase tracking-tighter mb-6 italic leading-tight">
-              {nextRace?.name?.split(' ')?.[0] ?? "Apex"} <span className="text-[var(--color-f1-red)]">{(nextRace?.name?.split(' ') ?? []).slice(1).join(' ')}</span>
+
+            <h1 className="max-w-5xl text-6xl sm:text-8xl lg:text-[9rem] font-display font-black text-white uppercase tracking-tighter italic leading-[0.8]">
+              {titleParts[0]} <span className="text-[var(--color-f1-red)]">{titleParts.slice(1).join(" ")}</span>
             </h1>
-            <p className="text-[var(--color-text-secondary)] text-lg sm:text-xl font-medium mb-10 max-w-xl leading-relaxed">
-              Round {nextRace?.round ?? "–"} of the {nextRace?.year ?? "2025"} World Championship. 
-              The pinnacle of motorsport continues at the {nextRace?.circuit?.name ?? nextRace?.circuit_id?.replace('_', ' ') ?? "Global Circuit"}.
+
+            <p className="mt-8 text-white/72 text-lg sm:text-xl font-medium max-w-2xl leading-relaxed">
+              Race-week intelligence for {nextRace?.circuit?.name ?? nextRace?.circuit_id?.replace("_", " ") ?? "the active circuit"}.
+              Certified schedules, standings, results, and live-state semantics in one operating surface.
             </p>
-            
-            <div className="flex flex-wrap gap-x-16 gap-y-8">
-              <div>
-                <span className="block text-[10px] uppercase tracking-widest text-[var(--color-text-muted)] font-black mb-2 italic">Scheduled Date</span>
-                <span className="text-2xl text-[var(--color-text-primary)] font-black italic font-data">
-                  {nextRace?.date ? new Date(nextRace.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' }).toUpperCase() : "TBC"}
-                </span>
-              </div>
-              <div>
-                <span className="block text-[10px] uppercase tracking-widest text-[var(--color-text-muted)] font-black mb-2 italic">Circuit DNA</span>
-                <span className="text-2xl text-[var(--color-text-primary)] font-black italic uppercase font-display">
-                  {nextRace?.circuit?.location ?? "Global Circuit"}
-                </span>
-              </div>
+
+            <div className="mt-10 flex flex-wrap gap-3">
+              <Link href="/calendar" className="bg-white text-black font-black uppercase tracking-widest px-7 py-4 text-xs hover:bg-[var(--color-f1-red)] hover:text-white transition-ui rounded-sm">
+                Weekend Schedule
+              </Link>
+              <Link href="/live" className="border border-white/25 text-white font-black uppercase tracking-widest px-7 py-4 text-xs hover:bg-white hover:text-black transition-ui rounded-sm">
+                Live Center
+              </Link>
             </div>
           </div>
 
-          <div className="flex-shrink-0">
-            <div className="bg-[var(--color-bg-secondary)] border border-white/10 p-8 sm:p-12 rounded-sm backdrop-blur-md relative overflow-hidden group">
-              <div className="absolute top-0 left-0 w-full h-[2px] bg-[var(--color-f1-red)] opacity-40" />
-              <span className="block text-center text-[10px] uppercase tracking-[0.4em] text-[var(--color-f1-red)] font-black mb-8 italic">
+          <aside className="lg:col-span-4 border border-white/15 bg-black/55 backdrop-blur-md rounded-sm">
+            <div className="border-b border-white/10 px-6 py-4 flex items-center justify-between">
+              <span className="text-[10px] uppercase tracking-[0.35em] text-[var(--color-f1-red)] font-black italic">
                 {isPast ? "Archive Access" : "Lights Out In"}
               </span>
-              <CountdownTimer targetDate={nextRace.date} />
-              <button className="w-full mt-12 bg-white text-black font-black uppercase tracking-widest py-4 text-xs hover:bg-[var(--color-f1-red)] hover:text-white transition-ui rounded-sm">
-                Full Weekend Intel
-              </button>
+              <span className="text-[10px] uppercase tracking-widest text-white/40 font-black">
+                {nextRace?.date ? new Date(nextRace.date).toLocaleDateString("en-GB", { day: "2-digit", month: "short" }).toUpperCase() : "TBC"}
+              </span>
             </div>
-          </div>
+            <div className="p-6 sm:p-8">
+              <CountdownTimer targetDate={nextRace.date} />
+              <div className="mt-8 grid grid-cols-2 gap-4 border-t border-white/10 pt-6">
+                <div>
+                  <span className="block text-[9px] uppercase tracking-widest text-white/35 font-black mb-2">Circuit</span>
+                  <span className="text-white font-display font-black italic uppercase">{nextRace?.circuit?.location ?? "TBC"}</span>
+                </div>
+                <div>
+                  <span className="block text-[9px] uppercase tracking-widest text-white/35 font-black mb-2">State</span>
+                  <span className="text-white font-display font-black italic uppercase">{isPast ? "Archived" : "Scheduled"}</span>
+                </div>
+              </div>
+            </div>
+          </aside>
         </div>
       </div>
-    </div>
+    </section>
   );
 }
