@@ -12,6 +12,11 @@ jobs:
     steps:
       - name: Check liveness endpoint
         run: |
+          if [ -z "${{ secrets.RAILWAY_API_URL }}" ]; then
+            echo "❌ ERROR: RAILWAY_API_URL secret is missing in GitHub Actions."
+            echo "Please add it in: Settings > Secrets and variables > Actions"
+            exit 1
+          fi
           RESPONSE=$(curl -s -o /tmp/live.json -w "%{http_code}" "${{ secrets.RAILWAY_API_URL }}/health/live")
           echo "HTTP Status: $RESPONSE"
           cat /tmp/live.json
@@ -34,16 +39,21 @@ jobs:
 
           python3 - <<'PY'
           import json
+          import sys
           with open("/tmp/ready.json") as f:
               payload = json.load(f)
 
-          deps = payload.get("dependencies", {})
-          failed = [
-              name for name, value in deps.items()
-              if value.get("status") != "healthy"
-          ]
-          if payload.get("status") != "ready" or failed:
-              raise SystemExit(f"Unhealthy dependencies: {failed}")
+          # Hardened Schema check: database and redis are now root properties
+          db_status = payload.get("database")
+          redis_status = payload.get("redis")
+          
+          unhealthy = []
+          if db_status != "healthy": unhealthy.append(f"database:{db_status}")
+          if redis_status != "healthy": unhealthy.append(f"redis:{redis_status}")
+
+          if payload.get("status") != "ready" or unhealthy:
+              print(f"❌ Unhealthy dependencies: {unhealthy}")
+              sys.exit(1)
           PY
 
-          echo "All service dependencies are ready"
+          echo "✅ All service dependencies are ready"
