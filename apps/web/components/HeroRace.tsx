@@ -4,10 +4,11 @@ import CountdownTimer from "./CountdownTimer";
 export default async function HeroRace() {
   const year = 2025;
   const racesData = await api.getSeasonRaces(year);
+  const raceList = racesData?.data ?? [];
   const now = new Date();
   
   // Find the next race or use the last one for demo
-  const nextRace = racesData.data.find(r => new Date(r.date) > now) || racesData.data[racesData.data.length - 1];
+  const nextRace = raceList.find(r => r?.date && new Date(r.date) > now) || raceList[raceList.length - 1];
   
   if (!nextRace) {
     return (
@@ -35,24 +36,24 @@ export default async function HeroRace() {
               <div className="h-[1px] w-12 bg-white/20" />
             </div>
             <h1 className="text-5xl sm:text-8xl font-display font-black text-[var(--color-text-primary)] uppercase tracking-tighter mb-6 italic leading-tight">
-              {nextRace.name.split(' ')[0]} <span className="text-[var(--color-f1-red)]">{nextRace.name.split(' ').slice(1).join(' ')}</span>
+              {nextRace?.name?.split(' ')?.[0] ?? "Apex"} <span className="text-[var(--color-f1-red)]">{(nextRace?.name?.split(' ') ?? []).slice(1).join(' ')}</span>
             </h1>
             <p className="text-[var(--color-text-secondary)] text-lg sm:text-xl font-medium mb-10 max-w-xl leading-relaxed">
-              Round {nextRace.round} of the {nextRace.year} World Championship. 
-              The pinnacle of motorsport continues at the {nextRace.circuit?.name ?? nextRace.circuit_id.replace('_', ' ')}.
+              Round {nextRace?.round ?? "–"} of the {nextRace?.year ?? "2025"} World Championship. 
+              The pinnacle of motorsport continues at the {nextRace?.circuit?.name ?? nextRace?.circuit_id?.replace('_', ' ') ?? "Global Circuit"}.
             </p>
             
             <div className="flex flex-wrap gap-x-16 gap-y-8">
               <div>
                 <span className="block text-[10px] uppercase tracking-widest text-[var(--color-text-muted)] font-black mb-2 italic">Scheduled Date</span>
                 <span className="text-2xl text-[var(--color-text-primary)] font-black italic font-data">
-                  {new Date(nextRace.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' }).toUpperCase()}
+                  {nextRace?.date ? new Date(nextRace.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' }).toUpperCase() : "TBC"}
                 </span>
               </div>
               <div>
                 <span className="block text-[10px] uppercase tracking-widest text-[var(--color-text-muted)] font-black mb-2 italic">Circuit DNA</span>
                 <span className="text-2xl text-[var(--color-text-primary)] font-black italic uppercase font-display">
-                  {nextRace.circuit?.location ?? "Global Circuit"}
+                  {nextRace?.circuit?.location ?? "Global Circuit"}
                 </span>
               </div>
             </div>

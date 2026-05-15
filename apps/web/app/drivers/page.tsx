@@ -58,8 +58,9 @@ import { cn } from "@/lib/utils";
 
 async function DriversGrid({ year }: { year: number }) {
   const standings = await api.getSeasonStandings(year);
+  const data = standings?.data ?? [];
   
-  if (!standings.data || standings.data.length === 0) {
+  if (data.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] border border-white/5 bg-white/[0.02] rounded-sm p-12 text-center telemetry-grid">
         <SectorOverlay className="opacity-10" />
@@ -74,7 +75,7 @@ async function DriversGrid({ year }: { year: number }) {
   return (
     <div className="flex flex-col gap-24">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 xl:gap-16">
-        {standings.data.map((entry, index) => {
+        {data.map((entry, index) => {
           const theme = getTeamTheme(entry.constructor?.constructor_ref);
           const identity = getDriverIdentity(entry.driver?.driver_ref);
           const media = getDriverMedia(entry.driver?.driver_ref);
@@ -107,7 +108,7 @@ async function DriversGrid({ year }: { year: number }) {
                   {/* Phase 1: Architectural Typography */}
                   <div className="absolute inset-0 flex items-center justify-center overflow-hidden pointer-events-none">
                     <span className="text-display-4 font-display font-black text-white/5 italic tracking-tighter-extreme select-none leading-none group-hover:scale-110 group-hover:text-white/10 transition-transform duration-[2000ms] ease-mechanical">
-                      {entry.driver?.surname?.slice(0, 3).toUpperCase()}
+                      {entry.driver?.surname?.slice(0, 3).toUpperCase() ?? "APX"}
                     </span>
                   </div>
 
@@ -121,7 +122,7 @@ async function DriversGrid({ year }: { year: number }) {
                          </span>
                        </div>
                        <span className="text-4xl font-display font-black italic text-white/20 group-hover:text-white transition-colors duration-700 leading-none">
-                          {entry.position.toString().padStart(2, '0')}
+                          {(entry?.position ?? index + 1).toString().padStart(2, '0')}
                        </span>
                     </div>
 
@@ -156,7 +157,7 @@ async function DriversGrid({ year }: { year: number }) {
                        
                        <div className="mt-8 flex justify-between items-center border-t border-white/5 pt-6 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
                           <span className="text-[10px] font-bold text-white uppercase tracking-widest">{entry.constructor?.name}</span>
-                          <span className="text-xl font-data font-black text-white italic">{entry.points} pts</span>
+                          <span className="text-xl font-data font-black text-white italic">{entry.points ?? 0} pts</span>
                        </div>
                     </div>
                   </div>

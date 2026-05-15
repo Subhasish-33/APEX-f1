@@ -3,13 +3,15 @@ import { api } from "@/lib/api";
 export default async function LastRaceCard() {
   const year = 2023;
   const races = await api.getSeasonRaces(year);
-  const pastRaces = races.data.filter(r => new Date(r.date) < new Date());
+  const raceData = races?.data ?? [];
+  const pastRaces = raceData.filter(r => r?.date && new Date(r.date) < new Date());
   const lastRace = pastRaces[pastRaces.length - 1];
   
   if (!lastRace) return null;
 
   const detail = await api.getRace(lastRace.race_id);
-  const podium = detail.results.sort((a, b) => (a.position || 99) - (b.position || 99)).slice(0, 3);
+  const results = detail?.results ?? [];
+  const podium = [...results].sort((a, b) => (a.position || 99) - (b.position || 99)).slice(0, 3);
 
   return (
     <div className="bg-white/5 border border-white/10 rounded-sm overflow-hidden h-full flex flex-col">

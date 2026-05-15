@@ -5,9 +5,10 @@ import { CheckCircle2, AlertCircle, Info } from "lucide-react";
 export default async function StandingsWidget() {
   const year = 2024;
   const standings = await api.getUnifiedStandings(year);
-  const top5 = standings.drivers.slice(0, 5);
+  const drivers = standings?.drivers ?? [];
+  const top5 = drivers.slice(0, 5);
 
-  const getStatusConfig = (status: string) => {
+  const getStatusConfig = (status: string | undefined) => {
     switch (status) {
       case "VERIFIED":
         return { 
@@ -36,7 +37,7 @@ export default async function StandingsWidget() {
     }
   };
 
-  const status = getStatusConfig(standings.status);
+  const status = getStatusConfig(standings?.status);
 
   return (
     <div className="bg-white/5 border border-white/10 rounded-sm overflow-hidden h-full flex flex-col">
@@ -61,11 +62,11 @@ export default async function StandingsWidget() {
          <div className="flex items-center gap-2">
             <div className="w-1.5 h-1.5 rounded-full bg-f1-red animate-pulse shadow-[0_0_8px_rgba(255,24,1,0.5)]" />
             <span className="text-[9px] font-black uppercase tracking-widest text-f1-red/80">
-              APEX Intelligence • {Math.round(standings.coverage_confidence * 100)}% Confidence
+              APEX Intelligence • {Math.round((standings?.coverage_confidence ?? 0) * 100)}% Confidence
             </span>
          </div>
          <span className="text-[8px] font-bold text-gray-400 uppercase tabular-nums">
-            Pulsed: {new Date(standings.freshness).toLocaleTimeString()}
+            Pulsed: {standings?.freshness ? new Date(standings.freshness).toLocaleTimeString() : "N/A"}
          </span>
       </div>
 
