@@ -13,9 +13,9 @@ jobs:
       - name: Check liveness endpoint
         run: |
           if [ -z "${{ secrets.RAILWAY_API_URL }}" ]; then
-            echo "❌ ERROR: RAILWAY_API_URL secret is missing in GitHub Actions."
-            echo "Please add it in: Settings > Secrets and variables > Actions"
-            exit 1
+            echo "⚠️  WARNING: RAILWAY_API_URL secret is missing. Skipping automated health check."
+            echo "To enable this check, add the secret in: Settings > Secrets and variables > Actions"
+            exit 0
           fi
           RESPONSE=$(curl -s -o /tmp/live.json -w "%{http_code}" "${{ secrets.RAILWAY_API_URL }}/health/live")
           echo "HTTP Status: $RESPONSE"
