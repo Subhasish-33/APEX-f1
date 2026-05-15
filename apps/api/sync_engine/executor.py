@@ -9,14 +9,26 @@ logger = logging.getLogger(__name__)
 
 class SyncExecutor:
     """
-    Orchestration engine for job lifecycles with built-in partial recovery.
+    Orchestration engine for job lifecycles with built-in partial recovery and circuit breaking.
     Uses AsyncSession for all operations.
     """
     
+    # Circuit Breaker state: Maps sync_type -> consecutive_failures
+    _failure_counters: Dict[str, int] = {}
+    FAILURE_THRESHOLD = 3
+
     async def execute_job(self, job_class: Type[BaseIngestionJob], endpoint: str, **kwargs) -> bool:
         """
         Executes a job through its full lifecycle: Start -> Run -> Audit -> End.
+        Includes Circuit Breaker logic to halt execution if threshold is met.
         """
+        sync_type = getattr(job_class, 'sync_type', 'UNKNOWN')
+        
+        # Check Circuit Breaker
+        if self._failure_counters.get(sync_type, 0) >= self.FAILURE_THRESHOLD:
+            logger.error(f"🚫 Circuit Breaker TRIP: Halting {sync_type} due to repeated failures.")
+            return False
+
         async with async_session() as db:
             job = job_class(db)
             await job.start_sync(endpoint)
@@ -39,11 +51,17 @@ class SyncExecutor:
                     failed=results.get("failed", 0),
                     version=results.get("version")
                 )
+                
+                # Reset counter on success
+                self._failure_counters[sync_type] = 0
                 return True
 
             except Exception as e:
                 error_msg = f"{str(e)}\n{traceback.format_exc()}"
                 logger.error(f"❌ Job Failed: {job.provider} | Error: {str(e)}")
+                
+                # Increment failure counter
+                self._failure_counters[sync_type] = self._failure_counters.get(sync_type, 0) + 1
                 
                 # Trigger rollback if implemented
                 try:

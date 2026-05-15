@@ -48,6 +48,24 @@ class SyncOperationalLogger:
                 
         return stats
 
+    async def get_platform_health(self) -> Dict[str, Any]:
+        """Synthesized health report for the platform."""
+        stats = await self.get_sync_stats(days=1)
+        failures = await self.get_recent_failures(hours=24)
+        
+        status = "HEALTHY"
+        if len(failures) > 5:
+            status = "DEGRADED"
+        if any(v["fail"] > v["success"] for v in stats["provider_breakdown"].values()):
+            status = "UNSTABLE"
+            
+        return {
+            "status": status,
+            "sync_stats": stats,
+            "recent_failures_count": len(failures),
+            "timestamp": datetime.utcnow().isoformat()
+        }
+
     async def check_staleness(self, provider: str, sync_type: str, threshold_hours: int = 12) -> bool:
         """
         Returns True if the last successful sync for this type was longer ago than threshold.

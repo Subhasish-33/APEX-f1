@@ -1,8 +1,23 @@
-from sqlalchemy import Column, Integer, String, Float, ForeignKey, Date, DateTime, UniqueConstraint, JSON, Boolean, Text
+from sqlalchemy import Column, Integer, String, Float, ForeignKey, Date, DateTime, UniqueConstraint, JSON, Boolean, Text, Enum
 from sqlalchemy.orm import declarative_base, relationship
 from datetime import datetime
+import enum
 
 Base = declarative_base()
+
+class SessionState(enum.Enum):
+    SCHEDULED = "scheduled"
+    GREEN_FLAG = "green_flag"
+    RED_FLAG = "red_flag"
+    PAUSED = "paused"
+    COMPLETED = "completed"
+    ARCHIVED = "archived"
+
+class TelemetryState(enum.Enum):
+    AVAILABLE = "available"
+    UNAVAILABLE = "unavailable"
+    DELAYED = "delayed"
+    STALE = "stale"
 
 class Driver(Base):
     __tablename__ = "drivers"
@@ -81,8 +96,8 @@ class Race(Base):
     analytics = Column(JSON) # {overtaking_index: 0.8, chaos_prob: 0.2, etc.}
 
     # Phase 3: State Intelligence & Freshness
-    status = Column(String, default="SCHEDULED") # SCHEDULED, PENDING, LIVE, COMPLETED, ARCHIVED, CANCELED
-    telemetry_available = Column(Boolean, default=False)
+    state = Column(Enum(SessionState), default=SessionState.SCHEDULED)
+    telemetry_state = Column(Enum(TelemetryState), default=TelemetryState.UNAVAILABLE)
     last_updated = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     ingestion_version = Column(String)
 
@@ -94,6 +109,20 @@ class Race(Base):
     constructor_standings = relationship("ConstructorStanding", back_populates="race")
     qualifying = relationship("Qualifying", back_populates="race")
     pit_stops = relationship("PitStop", back_populates="race")
+    sessions = relationship("Session", back_populates="race")
+
+class Session(Base):
+    __tablename__ = "sessions"
+    
+    id = Column(Integer, primary_key=True)
+    race_id = Column(Integer, ForeignKey("races.race_id"))
+    name = Column(String) # FP1, FP2, FP3, Qualifying, Sprint, Race
+    date = Column(DateTime)
+    
+    state = Column(Enum(SessionState), default=SessionState.SCHEDULED)
+    telemetry_state = Column(Enum(TelemetryState), default=TelemetryState.UNAVAILABLE)
+    
+    race = relationship("Race", back_populates="sessions")
 
 class Result(Base):
     __tablename__ = "results"
