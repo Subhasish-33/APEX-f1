@@ -1,7 +1,56 @@
-from sqlalchemy import Column, Integer, String, Float, ForeignKey, Date, DateTime, UniqueConstraint, JSON, Boolean, Text, Enum
+from sqlalchemy import Column, Integer, String, Float, ForeignKey, Date, DateTime, UniqueConstraint, JSON, Boolean, Text, Enum, Index
 from sqlalchemy.orm import declarative_base, relationship
 from datetime import datetime
 import enum
+import uuid
+
+# ── Media Pipeline Enums ─────────────────────────────────────────────────────
+
+class MediaEntityType(enum.Enum):
+    """What real-world entity this asset belongs to."""
+    DRIVER    = "DRIVER"
+    TEAM      = "TEAM"
+    CIRCUIT   = "CIRCUIT"
+    RACE      = "RACE"
+    ARTICLE   = "ARTICLE"
+
+class MediaCategory(enum.Enum):
+    """Functional role of the asset within the UI."""
+    HEADSHOT    = "HEADSHOT"       # Driver portrait — transparent PNG
+    HERO        = "HERO"           # Driver editorial action shot
+    LOGO        = "LOGO"           # Team/constructor mark — SVG preferred
+    CAR_RENDER  = "CAR_RENDER"     # Side-profile or 3/4 perspective car
+    HELMET      = "HELMET"         # Driver helmet macro shot
+    MAP         = "MAP"            # Circuit layout — APEX-rendered SVG
+    FLAG        = "FLAG"           # Nationality flag
+    THUMBNAIL   = "THUMBNAIL"      # Race/round editorial thumbnail (16:9)
+    ARTICLE_HERO = "ARTICLE_HERO"  # Full-bleed news hero
+
+class MediaSourceType(enum.Enum):
+    """Legal provenance tier. MUST be set before clearance."""
+    OFFICIAL_PRESS  = "OFFICIAL_PRESS"   # Team/FIA press kits — editorial rights
+    WIKIMEDIA       = "WIKIMEDIA"        # Wikimedia Commons — CC-BY-SA
+    OSM_DERIVED     = "OSM_DERIVED"      # OpenStreetMap geometry — ODbL
+    STOCK           = "STOCK"            # Unsplash/Pexels — commercial free
+    AI_GENERATED    = "AI_GENERATED"     # APEX proprietary generation
+    OPENF1_EPHEMERAL = "OPENF1_EPHEMERAL" # OpenF1 URLs — NOT for long-term use
+
+class MediaLifecycleState(enum.Enum):
+    """Explicit lifecycle state — the frontend always knows render safety."""
+    PROCESSING        = "PROCESSING"        # Downloaded, not yet verified
+    PENDING_CLEARANCE = "PENDING_CLEARANCE" # Verified, awaiting legal sign-off
+    ACTIVE            = "ACTIVE"            # Cleared, optimized, safe to render
+    DEGRADED          = "DEGRADED"          # Serving but from fallback chain
+    ARCHIVED          = "ARCHIVED"          # Superseded — do not render
+    FAILED            = "FAILED"            # Processing or verification failure
+
+class FallbackStrategy(enum.Enum):
+    """What the frontend renders when the primary asset is unavailable."""
+    TEAM_COLOR_GLOW   = "TEAM_COLOR_GLOW"   # CSS animated team-color glow shape
+    SILHOUETTE_WIRE   = "SILHOUETTE_WIRE"   # APEX-styled driver wireframe avatar
+    GENERIC_TRACK     = "GENERIC_TRACK"     # Generic circuit outline
+    COLOR_BLOCK       = "COLOR_BLOCK"       # Solid team primary color block
+    APEX_PLACEHOLDER  = "APEX_PLACEHOLDER"  # Branded "Signal Lost" panel
 
 Base = declarative_base()
 
@@ -398,3 +447,128 @@ class SyncLog(Base):
 
     def __repr__(self):
         return f"<SyncLog(id={self.id}, provider='{self.provider}', status='{self.status}')>"
+<<<<<<< HEAD
+=======
+
+class MediaAsset(Base):
+    """
+    Tier 5 — Canonical Media Registry.
+
+    This is the single source of truth for every visual asset on the APEX platform.
+    The frontend MUST resolve all media through this table — no direct URL
+    embedding, no guessing, no silent fallbacks.
+
+    Lifecycle: PROCESSING → PENDING_CLEARANCE → ACTIVE
+                                              → FAILED
+                         ACTIVE → ARCHIVED
+                         ACTIVE → DEGRADED (fallback serving)
+    """
+    __tablename__ = "media_assets"
+
+    # ── Identity ──────────────────────────────────────────────────────────────
+    id           = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    entity_type  = Column(Enum(MediaEntityType), nullable=False)   # DRIVER, TEAM …
+    entity_ref   = Column(String, nullable=False, index=True)       # 'hamilton', 'ferrari'
+    category     = Column(Enum(MediaCategory),   nullable=False)    # HEADSHOT, LOGO …
+    season       = Column(Integer, nullable=True)                   # 2025; NULL = evergreen
+    priority     = Column(Integer, default=10)                      # lower = preferred
+
+    # ── Storage ───────────────────────────────────────────────────────────────
+    source_url   = Column(Text, nullable=True)   # Original provenance URL
+    internal_url = Column(Text, nullable=True)   # APEX CDN/Storage path (served in prod)
+    cdn_url      = Column(Text, nullable=True)   # Final delivery URL (CDN edge)
+
+    # ── Lifecycle ─────────────────────────────────────────────────────────────
+    lifecycle_state = Column(
+        Enum(MediaLifecycleState),
+        default=MediaLifecycleState.PROCESSING,
+        nullable=False,
+        index=True,
+    )
+    clearance_status  = Column(Boolean, default=False, nullable=False)  # legal sign-off
+    is_production_safe = Column(Boolean, default=False, nullable=False)  # final gate
+
+    # ── Provenance & Legal Governance ─────────────────────────────────────────
+    source_type      = Column(Enum(MediaSourceType), nullable=True)
+    owner_id         = Column(String, nullable=True)   # "Scuderia Ferrari Press Office"
+    license_type     = Column(String, nullable=True)   # "CC-BY-SA-4.0" / "APEX_PROPRIETARY"
+    attribution_text = Column(Text,   nullable=True)   # Rendered in UI legal overlay
+    license_url      = Column(Text,   nullable=True)   # Link to license deed
+    attribution_required = Column(Boolean, default=False)  # Must show attribution in UI
+
+    # ── Verification ──────────────────────────────────────────────────────────
+    checksum         = Column(String, nullable=True)  # SHA-256 of downloaded bytes
+    checksum_verified = Column(Boolean, default=False) # Whether checksum passed
+    last_verified    = Column(DateTime, nullable=True)
+    verification_error = Column(Text, nullable=True)  # Last failure message
+
+    # ── Processing Metadata (CLS Prevention) ─────────────────────────────────
+    # These fields let the frontend reserve exact space before the image loads.
+    width            = Column(Integer, nullable=True)
+    height           = Column(Integer, nullable=True)
+    aspect_ratio     = Column(Float,   nullable=True)  # width / height
+    blurhash         = Column(String,  nullable=True)  # BlurHash for LQIP placeholder
+    has_transparency = Column(Boolean, nullable=True)  # PNG alpha channel present
+
+    # ── Optimization Status ───────────────────────────────────────────────────
+    avif_available   = Column(Boolean, default=False)  # AVIF variant generated
+    webp_available   = Column(Boolean, default=False)  # WebP variant generated
+    optimization_version = Column(Integer, default=0)  # Bump to trigger regen
+
+    # ── Color & Composition Metadata ─────────────────────────────────────────
+    # Stored as JSON to avoid separate palette table. Frontend reads this
+    # to theme backgrounds, glows, and typography without extra round-trips.
+    dominant_palette = Column(JSON, nullable=True)
+    # e.g. {"vibrant": "#E10600", "dark": "#15151E", "muted": "#3D3D3D", "light": "#FFFFFF"}
+    focal_point      = Column(JSON, nullable=True)
+    # e.g. {"x": 0.5, "y": 0.3}  — normalized 0–1, for responsive crop rules
+
+    # ── Variant Orchestration ─────────────────────────────────────────────────
+    # Rather than duplicating rows per variant, we store a variant manifest here.
+    # Each key maps to a cdn_url for that variant size.
+    # Variants are generated by generate_variants.py and certified separately.
+    variants = Column(JSON, nullable=True)
+    # {
+    #   "thumbnail":  {"url": "…", "width": 120, "height": 120},
+    #   "card":       {"url": "…", "width": 400, "height": 300},
+    #   "hero":       {"url": "…", "width": 1200, "height": 800},
+    #   "mobile":     {"url": "…", "width": 375, "height": 250},
+    #   "retina":     {"url": "…", "width": 2400, "height": 1600},
+    #   "cinematic":  {"url": "…", "width": 1920, "height": 1080},
+    #   "blur":       {"url": "…", "width": 20,   "height": 14}
+    # }
+
+    # ── Fallback Chain ────────────────────────────────────────────────────────
+    fallback_strategy = Column(
+        Enum(FallbackStrategy),
+        default=FallbackStrategy.APEX_PLACEHOLDER,
+        nullable=False,
+    )
+
+    # ── Audit Trail ───────────────────────────────────────────────────────────
+    audit_log    = Column(JSON, nullable=True)
+    # [{"action": "INGESTED", "by": "ingest_media.py", "at": "2025-…"},
+    #  {"action": "VERIFIED", "by": "verify_media.py",  "at": "2025-…"},
+    #  {"action": "CERTIFIED","by": "audit_media.py",   "at": "2025-…"}]
+
+    ingestion_source = Column(String, nullable=True)  # Script that created this row
+    created_at       = Column(DateTime, default=datetime.utcnow)
+    updated_at       = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    __table_args__ = (
+        # Unique slot per entity/category/season — prevents duplicate ingestion
+        UniqueConstraint("entity_type", "entity_ref", "category", "season",
+                         name="uq_media_slot"),
+        # Fast lookup by lifecycle state for the certification queue
+        Index("ix_media_lifecycle", "lifecycle_state"),
+        # Fast lookup for the frontend resolver
+        Index("ix_media_entity_lookup", "entity_type", "entity_ref", "category"),
+    )
+
+    def __repr__(self):
+        return (
+            f"<MediaAsset({self.entity_type}/{self.entity_ref}/{self.category} "
+            f"state={self.lifecycle_state} cleared={self.clearance_status})>"
+        )
+
+>>>>>>> 9ef98e3 (feat(media): Tier 5 Phase 1 - Deterministic Media Infrastructure)
