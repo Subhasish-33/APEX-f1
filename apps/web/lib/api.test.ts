@@ -38,7 +38,7 @@ describe('API Client', () => {
       expect.stringContaining('/drivers/verstappen'),
       expect.any(Object)
     );
-    expect(result.surname).toBe('Verstappen');
+    expect(result?.surname).toBe('Verstappen');
   });
 
   it('getSeasonStandings should fetch standings for a specific year', async () => {

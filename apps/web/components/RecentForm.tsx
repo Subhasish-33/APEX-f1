@@ -2,15 +2,15 @@ import { ChevronUp, ChevronDown, Minus } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface RaceResult {
-  race: {
+  race?: {
     name: string;
     date: string;
-    circuit: {
+    circuit?: {
       name: string;
     }
   };
   grid: number;
-  position: number;
+  position?: number;
   points: number;
 }
 
@@ -46,10 +46,10 @@ export default function RecentForm({ results }: { results: RaceResult[] }) {
                {/* Race ID */}
                <div className="col-span-4 flex flex-col">
                   <span className="text-[10px] font-data font-black text-white uppercase tracking-tighter leading-tight">
-                    {r.race.name.replace(" Grand Prix", "").toUpperCase()}
+                    {(r.race?.name ?? "Unknown Grand Prix").replace(" Grand Prix", "").toUpperCase()}
                   </span>
                   <span className="text-[8px] font-black text-[var(--color-text-muted)] uppercase tracking-[0.2em]">
-                    {new Date(r.race.date).getFullYear()} // RD {results.length - i}
+                    {r.race?.date ? new Date(r.race.date).getFullYear() : "----"} / RD {results.length - i}
                   </span>
                </div>
 

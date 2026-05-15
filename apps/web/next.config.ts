@@ -7,12 +7,6 @@ const bundleAnalyzer = withBundleAnalyzer({
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
-  typescript: {
-    ignoreBuildErrors: true,
-  },
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "media.formula1.com" },
@@ -28,7 +22,7 @@ const nextConfig: NextConfig = {
   },
 
   devIndicators: {
-    position: "bottom-right",
+    buildActivityPosition: "bottom-right",
   },
 
   webpack: (config) => {

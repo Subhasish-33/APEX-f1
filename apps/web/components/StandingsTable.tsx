@@ -11,8 +11,22 @@ const NATIONALITY_MAP: { [key: string]: string } = {
   'Swiss': 'ch', 'Austrian': 'at', 'Belgian': 'be', 'Brazilian': 'br'
 };
 
-export default function StandingsTable({ data }: { data: DriverStanding[] }) {
-  const maxPoints = Math.max(...data.map(d => d.points), 1);
+export default function StandingsTable({ data = [] }: { data?: DriverStanding[] }) {
+  const rows = Array.isArray(data) ? data : [];
+  const maxPoints = Math.max(...rows.map(d => d.points ?? 0), 1);
+
+  if (rows.length === 0) {
+    return (
+      <div className="min-h-64 flex flex-col items-center justify-center text-center border border-white/5 bg-white/[0.02] rounded-sm p-10">
+        <span className="text-[10px] font-black uppercase tracking-[0.4em] text-[var(--color-f1-red)] mb-3">
+          Standings Unavailable
+        </span>
+        <p className="text-xs text-[var(--color-text-muted)] uppercase tracking-widest max-w-sm">
+          No certified championship table is available for this season yet.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="overflow-x-auto">
@@ -27,7 +41,7 @@ export default function StandingsTable({ data }: { data: DriverStanding[] }) {
           </tr>
         </thead>
         <tbody className="divide-y divide-white/5">
-          {data.map((row) => (
+          {rows.map((row) => (
             <tr key={row.id} className="hover:bg-white/[0.02] transition-colors group">
             <td className="py-4 px-4">
               <div className="flex items-center gap-2">
@@ -77,7 +91,7 @@ export default function StandingsTable({ data }: { data: DriverStanding[] }) {
                 <div className="w-full bg-white/5 h-1.5 rounded-full overflow-hidden">
                   <div 
                     className="h-full bg-f1-red"
-                    style={{ width: `${(row.points / maxPoints) * 100}%` }}
+                    style={{ width: `${((row.points ?? 0) / maxPoints) * 100}%` }}
                   />
                 </div>
               </td>

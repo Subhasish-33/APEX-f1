@@ -39,6 +39,10 @@ export default async function DriverDetailPage({
     return notFound();
   }
 
+  if (!driver) {
+    return notFound();
+  }
+
   const [career, results, teammateDuel] = await Promise.all([
     api.getDriverCareer(ref),
     api.getDriverResults(ref, 5),
@@ -240,9 +244,9 @@ export default async function DriverDetailPage({
                          <span className="text-3xl font-display font-black text-white italic block uppercase tracking-tighter">{teammateDuel.teammate.surname}</span>
                       </div>
                       <div className="md:col-span-2">
-                        <DuelRow label="Race Performance" score={teammateDuel.race_h2h} color={theme.primary} />
+                        <DuelRow label="Race Performance" score={teammateDuel.race_h2h ?? [0, 0]} color={theme.primary} />
                         <div className="h-12" />
-                        <DuelRow label="Qualifying Pace" score={teammateDuel.qualifying_h2h} color={theme.primary} />
+                        <DuelRow label="Qualifying Pace" score={teammateDuel.qualifying_h2h ?? [0, 0]} color={theme.primary} />
                       </div>
                    </div>
                 </div>

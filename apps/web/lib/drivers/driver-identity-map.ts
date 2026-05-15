@@ -104,6 +104,8 @@ export const getDriverIdentity = (ref: string | undefined): DriverIdentity => {
   const defaultIdentity: DriverIdentity = {
     tagline: "Driven by Intelligence",
     personality: "dynamic",
+    compositionTrait: "editorial",
+    visualWeight: "balanced",
     accentIntensity: 0.5,
     motionTone: "smooth",
   };

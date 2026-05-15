@@ -79,14 +79,14 @@ export default async function StandingsPage({
 
 async function StandingsList({ year }: { year: number }) {
   const data = await api.getSeasonStandings(year);
-  return <StandingsTable data={data.data} />;
+  return <StandingsTable data={data?.data ?? []} />;
 }
 
 async function ConstructorStandingsList({ year }: { year: number }) {
   const data = await api.getSeasonConstructorStandings(year);
   return (
     <div className="divide-y divide-white/5">
-      {data.data.map((entry) => (
+      {(data?.data ?? []).map((entry) => (
         <div
           key={entry.id}
           className="px-6 py-4 flex justify-between items-center hover:bg-white/[0.02] transition-ui cursor-default"
@@ -104,6 +104,11 @@ async function ConstructorStandingsList({ year }: { year: number }) {
           </span>
         </div>
       ))}
+      {(data?.data ?? []).length === 0 && (
+        <div className="px-6 py-8 text-[10px] font-black uppercase tracking-widest text-[var(--color-text-muted)]">
+          Constructor table unavailable
+        </div>
+      )}
     </div>
   );
 }

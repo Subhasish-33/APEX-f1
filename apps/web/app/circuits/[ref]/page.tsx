@@ -4,6 +4,7 @@ import { api } from "../../../lib/api";
 import { CircuitHUD } from "../../../components/Circuit/CircuitHUD";
 import { ChevronLeft, Trophy, Zap, Wind } from "lucide-react";
 import Link from "next/link";
+import { notFound } from "next/navigation";
 
 interface PageProps {
   params: Promise<{ ref: string }>;
@@ -14,6 +15,10 @@ export default function CircuitDetailPage({ params }: PageProps) {
   
   const circuitPromise = api.getCircuit(ref);
   const circuit = use(circuitPromise);
+
+  if (!circuit) {
+    notFound();
+  }
 
   const richStats = {
     length: "5.793 KM",

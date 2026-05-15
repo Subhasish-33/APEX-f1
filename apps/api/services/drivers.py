@@ -25,11 +25,9 @@ class DriverService:
         data = [{
             "driver_id": d.driver_id,
             "driver_ref": d.driver_ref,
-            "number": d.number,
             "code": d.code,
             "forename": d.forename,
             "surname": d.surname,
-            "dob": d.dob.isoformat() if d.dob else None,
             "nationality": d.nationality
         } for d in drivers]
 
@@ -55,11 +53,9 @@ class DriverService:
         data = {
             "driver_id": driver.driver_id,
             "driver_ref": driver.driver_ref,
-            "number": driver.number,
             "code": driver.code,
             "forename": driver.forename,
             "surname": driver.surname,
-            "dob": driver.dob.isoformat() if driver.dob else None,
             "nationality": driver.nationality
         }
 

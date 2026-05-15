@@ -43,6 +43,16 @@ export default function PredictionCard({ predictions }: { predictions: Predictio
       </div>
 
       <div className="divide-y divide-white/5">
+        {predictions.length === 0 && (
+          <div className="p-12 text-center">
+            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-f1-red">
+              Forecast Offline
+            </span>
+            <p className="text-sm text-gray-500 mt-3 max-w-md mx-auto">
+              No certified prediction envelope is available. The system will not render simulated model output.
+            </p>
+          </div>
+        )}
         {predictions.map((pred) => {
           const isExpanded = expandedId === pred.driverRef;
           const conf = getConfidenceLabel(pred.confidenceScore);

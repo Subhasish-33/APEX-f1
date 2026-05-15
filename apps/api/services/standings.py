@@ -1,8 +1,8 @@
 import time
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from models import DriverStanding, ConstructorStanding, Race, Session, SessionState
+from models import DriverStanding, Race, Session, SessionState, Driver
 from schemas.envelope import ResponseEnvelope, MetaSchema, StateSchema, FreshnessState, CertificationState
 from core.exceptions import ResourceNotFoundException
 
@@ -24,7 +24,7 @@ class StandingsService:
             )
 
         # Check latest session state to determine freshness/certification
-        latest_session_stmt = select(Session.state).where(Session.race_id == latest_race_id).order_by(Session.session_key.desc()).limit(1)
+        latest_session_stmt = select(Session.state).where(Session.race_id == latest_race_id).order_by(Session.id.desc()).limit(1)
         latest_state = await self.db.scalar(latest_session_stmt)
         
         certification = CertificationState.CERTIFIED
@@ -33,20 +33,25 @@ class StandingsService:
         if latest_state in [SessionState.GREEN_FLAG, SessionState.RED_FLAG]:
             freshness = FreshnessState.LIVE
             certification = CertificationState.UNVERIFIED
-        elif latest_state in [SessionState.CHECKERED_FLAG, SessionState.RACE_OVER]:
+        elif latest_state in [SessionState.COMPLETED, SessionState.ARCHIVED]:
             freshness = FreshnessState.STALE
             certification = CertificationState.PROVISIONAL
 
         # Fetch standings
-        stmt = select(DriverStanding).where(DriverStanding.race_id == latest_race_id).order_by(DriverStanding.position)
-        results = (await self.db.execute(stmt)).scalars().all()
+        stmt = (
+            select(DriverStanding, Driver.driver_ref)
+            .join(Driver, Driver.driver_id == DriverStanding.driver_id)
+            .where(DriverStanding.race_id == latest_race_id)
+            .order_by(DriverStanding.position)
+        )
+        results = (await self.db.execute(stmt)).all()
         
         # Map to dicts (this is normally handled by a Pydantic Model layer, we'll serialize to raw dicts for generic response)
         # Assuming schemas exist, normally we'd return actual Pydantic schema types here, but dictionaries work for serialization via ResponseEnvelope
         data = []
-        for r in results:
+        for r, driver_ref in results:
             data.append({
-                "driver_ref": r.driver_ref,
+                "driver_ref": driver_ref,
                 "position": r.position,
                 "points": r.points,
                 "wins": r.wins

@@ -1,4 +1,4 @@
-import { TOKENS } from "./tokens";
+import { TOKENS } from "../tokens";
 
 export function getTeamColor(ref: string | undefined): string {
   if (!ref) return TOKENS.colors.brand.f1Red;

@@ -6,49 +6,79 @@ import { FreshnessBadge } from '../../components/live/freshness_language/Freshne
 import { DegradedBanner } from '../../components/live/freshness_language/DegradedBanner';
 import { LiveStorylineRouter } from '../../components/live/editorial_live_fusion/LiveStorylineRouter';
 import { LifecycleState } from '../../lib/live/timing_hierarchy/session_focus_manager';
+import { api, LiveLeaderboardRow } from '../../lib/api';
 
 export default function LiveRaceCenter() {
-  // In a real implementation, this state comes from the SWR/React Query polling
-  const [sessionState, setSessionState] = useState<LifecycleState>("GREEN_FLAG");
-  const [isDegraded, setIsDegraded] = useState(false);
-  const [latency, setLatency] = useState(2);
+  const [sessionState] = useState<LifecycleState>("ARCHIVED");
+  const [isDegraded, setIsDegraded] = useState(true);
+  const [freshness, setFreshness] = useState<"LIVE" | "STALE" | "HISTORICAL">("HISTORICAL");
+  const [leaderboard, setLeaderboard] = useState<LiveLeaderboardRow[]>([]);
 
-  // Example placeholder slots
+  useEffect(() => {
+    let cancelled = false;
+
+    api.getLiveLeaderboard()
+      .then((response) => {
+        if (cancelled) return;
+        setLeaderboard(response.data);
+        setFreshness(response.state.freshness);
+        setIsDegraded(response.state.degraded || response.data.length === 0);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setLeaderboard([]);
+        setFreshness("HISTORICAL");
+        setIsDegraded(true);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const LeaderboardSlot = (
-    <div className="rounded-xl bg-neutral-900 p-6 h-[600px] border border-neutral-800">
+    <div className="rounded-md bg-neutral-900 p-6 min-h-[420px] border border-neutral-800">
       <h2 className="text-xl font-bold text-white mb-4">Live Leaderboard</h2>
-      <div className="space-y-3">
-        {/* Example rows adhering to motion rules (no blinking, tabular nums) */}
-        <div className="flex justify-between items-center bg-neutral-800/50 p-3 rounded">
-          <span className="text-white font-mono">1. VER</span>
-          <span className="text-neutral-400 font-mono tabular-nums">LEADER</span>
+      {leaderboard.length > 0 ? (
+        <div className="space-y-3">
+          {leaderboard.map((row) => (
+            <div key={`${row.position}-${row.driver_ref ?? row.driver_id}`} className="flex justify-between items-center bg-neutral-800/50 p-3 rounded-sm">
+              <span className="text-white font-mono">
+                {row.position ? `${row.position}. ` : ""}
+                {row.driver_ref ?? row.driver_id ?? "CERTIFIED"}
+              </span>
+              <span className="text-neutral-400 font-mono tabular-nums">
+                {row.gap ?? row.status ?? "NO DELTA"}
+              </span>
+            </div>
+          ))}
         </div>
-        <div className="flex justify-between items-center bg-neutral-800/50 p-3 rounded border-l-2 border-red-500">
-          <span className="text-white font-mono">2. LEC</span>
-          <span className="text-neutral-300 font-mono tabular-nums">+1.234s</span>
+      ) : (
+        <div className="h-72 flex flex-col items-center justify-center text-center border border-dashed border-neutral-800 rounded-sm">
+          <span className="text-[10px] font-black uppercase tracking-[0.4em] text-neutral-500 mb-3">
+            No Certified Live Timing
+          </span>
+          <p className="text-sm text-neutral-500 max-w-sm">
+            The live race center is waiting for canonical telemetry. No simulated leaderboard is displayed.
+          </p>
         </div>
-        <div className="flex justify-between items-center bg-neutral-800/50 p-3 rounded">
-          <span className="text-white font-mono">3. NOR</span>
-          <span className="text-neutral-400 font-mono tabular-nums">+4.567s</span>
-        </div>
-      </div>
+      )}
     </div>
   );
 
   const TelemetrySlot = (
-    <div className="rounded-xl bg-neutral-900 p-6 border border-neutral-800">
-      <h2 className="text-xl font-bold text-white mb-4">Tire Context</h2>
-      <div className="space-y-2">
-        <p className="text-sm text-neutral-400">VER: Medium (L12)</p>
-        <p className="text-sm text-neutral-400">LEC: Hard (L15)</p>
-      </div>
+    <div className="rounded-md bg-neutral-900 p-6 border border-neutral-800">
+      <h2 className="text-xl font-bold text-white mb-4">Telemetry Context</h2>
+      <p className="text-sm text-neutral-500">
+        Tire, sector, and interval intelligence will activate only when provider telemetry is certified.
+      </p>
     </div>
   );
 
   const RaceControlSlot = (
-    <div className="rounded-xl bg-red-950/20 p-6 border border-red-900/50">
+    <div className="rounded-md bg-red-950/20 p-6 border border-red-900/50">
       <h2 className="text-xl font-bold text-red-500 mb-4 uppercase tracking-widest">Race Control</h2>
-      <p className="text-sm text-red-400 font-mono">14:32:04 - YELLOW FLAG SECTOR 2</p>
+      <p className="text-sm text-red-400 font-mono">NO ACTIVE CERTIFIED RACE CONTROL FEED</p>
     </div>
   );
 
@@ -62,7 +92,7 @@ export default function LiveRaceCenter() {
         
         <div className="flex flex-col items-end gap-2">
           <FreshnessBadge 
-            state={isDegraded ? "STALE" : "LIVE"} 
+            state={freshness}
             degraded={isDegraded} 
           />
         </div>
@@ -70,11 +100,10 @@ export default function LiveRaceCenter() {
 
       {isDegraded && (
         <div className="mb-6">
-          <DegradedBanner reason="PROVIDER_LAG" latencySec={latency} />
+          <DegradedBanner reason="PROVIDER_LAG" latencySec={0} />
         </div>
       )}
 
-      {/* The Core Live Layout Engine */}
       <AdaptiveLiveGrid
         sessionState={sessionState}
         isDegraded={isDegraded}
@@ -84,24 +113,12 @@ export default function LiveRaceCenter() {
         EditorialSlot={
           <LiveStorylineRouter 
             sessionState={sessionState} 
-            lapsCompleted={12} 
-            totalLaps={57} 
+            lapsCompleted={0}
+            totalLaps={null}
             degraded={isDegraded} 
           />
         }
       />
-      
-      {/* Dev Controls to simulate race states for testing the UX logic */}
-      <div className="mt-12 p-4 bg-neutral-950 border border-neutral-800 rounded-lg">
-        <p className="text-xs text-neutral-500 mb-3 uppercase tracking-widest">Simulator Controls</p>
-        <div className="flex flex-wrap gap-2">
-          <button onClick={() => { setSessionState("GREEN_FLAG"); setIsDegraded(false); }} className="px-3 py-1 bg-green-900/30 text-green-500 rounded text-xs">Green Flag</button>
-          <button onClick={() => { setSessionState("SAFETY_CAR"); setIsDegraded(false); }} className="px-3 py-1 bg-yellow-900/30 text-yellow-500 rounded text-xs">Safety Car</button>
-          <button onClick={() => { setSessionState("RED_FLAG"); setIsDegraded(false); }} className="px-3 py-1 bg-red-900/30 text-red-500 rounded text-xs">Red Flag</button>
-          <button onClick={() => { setSessionState("ARCHIVED"); setIsDegraded(true); }} className="px-3 py-1 bg-neutral-800 text-neutral-400 rounded text-xs">Archived</button>
-          <button onClick={() => { setIsDegraded(true); setLatency(18); }} className="px-3 py-1 border border-neutral-700 text-neutral-400 rounded text-xs ml-4">Simulate Degradation</button>
-        </div>
-      </div>
     </div>
   );
 }

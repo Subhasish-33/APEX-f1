@@ -137,6 +137,9 @@ async def get_season_constructor_standings(
         .offset(offset)
         .limit(limit)
     )
+    result = await session.execute(stmt)
+    standings = result.scalars().all()
+
     # 4. Calculate Freshness
     all_dates = [c.last_updated for c in standings if c.last_updated]
     freshness = max(all_dates) if all_dates else None

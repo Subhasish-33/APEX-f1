@@ -74,7 +74,9 @@ export interface DriverStanding {
   driver_id: number;
   points: number;
   position: number;
+  wins?: number;
   driver?: Driver;
+  constructor?: Constructor;
 }
 
 export interface ConstructorStanding {

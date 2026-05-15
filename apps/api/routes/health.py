@@ -1,8 +1,10 @@
-from fastapi import APIRouter, Depends, Response, status
+from fastapi import APIRouter, Depends, status
+from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import text, select, desc
-from typing import Annotated, List, Dict, Any
+from typing import Annotated, List
 import time
+import asyncio
 from datetime import datetime
 
 from dependencies import get_db
@@ -12,6 +14,37 @@ from schemas import PlatformHealthResponse
 
 router = APIRouter(prefix="/health")
 DBSession = Annotated[AsyncSession, Depends(get_db)]
+HEALTHCHECK_TIMEOUT_SECONDS = 2.0
+
+
+def _utc_timestamp() -> str:
+    return datetime.utcnow().isoformat() + "Z"
+
+
+async def _measure_dependency(name: str, check):
+    start = time.perf_counter()
+    try:
+        await asyncio.wait_for(check(), timeout=HEALTHCHECK_TIMEOUT_SECONDS)
+        return {
+            "name": name,
+            "status": "healthy",
+            "latency_ms": round((time.perf_counter() - start) * 1000, 2),
+            "error": None,
+        }
+    except asyncio.TimeoutError:
+        return {
+            "name": name,
+            "status": "unhealthy",
+            "latency_ms": round((time.perf_counter() - start) * 1000, 2),
+            "error": "timeout",
+        }
+    except Exception as exc:
+        return {
+            "name": name,
+            "status": "unhealthy",
+            "latency_ms": round((time.perf_counter() - start) * 1000, 2),
+            "error": exc.__class__.__name__,
+        }
 
 @router.get("/live")
 async def liveness_probe():
@@ -19,7 +52,11 @@ async def liveness_probe():
     Minimal liveness probe for Railway/Docker.
     Must return instantly and not touch any dependencies.
     """
-    return {"status": "alive", "timestamp": time.time()}
+    return {
+        "status": "alive",
+        "service": "apex-f1-api",
+        "timestamp": _utc_timestamp(),
+    }
 
 @router.get("/ready")
 async def readiness_probe(session: DBSession):
@@ -28,40 +65,33 @@ async def readiness_probe(session: DBSession):
     Checks PostgreSQL and Redis availability.
     Returns 503 if critical dependencies are down.
     """
-    health_status = {
-        "status": "ready",
-        "database": "unhealthy",
-        "redis": "unhealthy",
-        "timestamp": datetime.utcnow()
-    }
-    
-    is_ready = True
-    
-    # 1. Check Database
-    try:
+    async def check_database():
         await session.execute(text("SELECT 1"))
-        health_status["database"] = "healthy"
-    except Exception:
-        health_status["database"] = "unhealthy"
-        is_ready = False
-        
-    # 2. Check Redis
-    try:
+
+    async def check_redis():
         await redis_client.ping()
-        health_status["redis"] = "healthy"
-    except Exception:
-        health_status["redis"] = "unhealthy"
-        is_ready = False
-        
+
+    database, redis = await asyncio.gather(
+        _measure_dependency("database", check_database),
+        _measure_dependency("redis", check_redis),
+    )
+    dependencies = {"database": database, "redis": redis}
+    is_ready = all(item["status"] == "healthy" for item in dependencies.values())
+
+    payload = {
+        "status": "ready" if is_ready else "not_ready",
+        "service": "apex-f1-api",
+        "timestamp": _utc_timestamp(),
+        "dependencies": dependencies,
+    }
+
     if not is_ready:
-        health_status["status"] = "not_ready"
-        return Response(
-            content=str(health_status), 
+        return JSONResponse(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            media_type="application/json"
+            content=payload,
         )
-        
-    return health_status
+
+    return payload
 
 @router.get("/system")
 async def system_diagnostics(session: DBSession):
@@ -69,27 +99,37 @@ async def system_diagnostics(session: DBSession):
     Operational diagnostics for observability.
     Includes versioning, degradation states, and recent health events.
     """
-    # Recent health events
-    stmt = select(PlatformHealth).order_by(desc(PlatformHealth.timestamp)).limit(5)
-    result = await session.execute(stmt)
-    recent_events = result.scalars().all()
-    
-    # Check for critical degradation in last events
-    is_degraded = any(e.status == "CRITICAL" for e in recent_events)
-    
-    # Redis latency/freshness (simplified)
-    redis_alive = False
+    async def load_recent_events():
+        stmt = select(PlatformHealth).order_by(desc(PlatformHealth.timestamp)).limit(5)
+        result = await session.execute(stmt)
+        return result.scalars().all()
+
     try:
-        await redis_client.ping()
-        redis_alive = True
+        recent_events = await asyncio.wait_for(
+            load_recent_events(),
+            timeout=HEALTHCHECK_TIMEOUT_SECONDS,
+        )
+        database_status = "healthy"
     except Exception:
-        pass
+        recent_events = []
+        database_status = "unhealthy"
+
+    is_degraded = any(e.status == "CRITICAL" for e in recent_events)
+
+    async def check_redis():
+        await redis_client.ping()
+
+    redis_status = await _measure_dependency("redis", check_redis)
 
     return {
-        "status": "DEGRADED" if is_degraded else "OPERATIONAL",
+        "status": "DEGRADED" if is_degraded or database_status != "healthy" else "OPERATIONAL",
         "version": "3.5.0-hardened",
-        "uptime_ref": time.time(),
-        "redis_connected": redis_alive,
+        "timestamp": _utc_timestamp(),
+        "dependencies": {
+            "database": {"name": "database", "status": database_status},
+            "redis": redis_status,
+        },
+        "degraded": is_degraded or database_status != "healthy" or redis_status["status"] != "healthy",
         "recent_alerts": [
             {"type": e.event_type, "message": e.message, "status": e.status}
             for e in recent_events

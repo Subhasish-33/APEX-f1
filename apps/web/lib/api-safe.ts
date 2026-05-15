@@ -66,7 +66,7 @@ async function fetchSafe<T>(endpoint: string, options: ApiOptions = {}): Promise
           });
           throw new ApiError("API Contract Violation", 500, "SCHEMA_ERROR");
         }
-        return result.data;
+        return result.data as T;
       }
       
       return data;
