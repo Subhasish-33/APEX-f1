@@ -12,7 +12,8 @@ from routes import (
     standings,
     health,
     sync,
-    live
+    live,
+    media
 )
 from db import engine
 from models import Base
@@ -58,6 +59,7 @@ app.include_router(standings.router, tags=["Standings"])
 app.include_router(sync.router, tags=["Platform Sync"])
 app.include_router(health.router, tags=["Platform Health"])
 app.include_router(live.router, prefix="/live", tags=["Live Session"])
+app.include_router(media.router, prefix="/media", tags=["Media Engine"])
 
 @app.get("/")
 async def root():
