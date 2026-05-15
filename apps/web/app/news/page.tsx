@@ -1,3 +1,7 @@
+"use client";
+
+import * as React from "react";
+import { useState, useRef } from "react";
 import Link from "next/link";
 
 const plannedFeeds = [
@@ -9,30 +13,47 @@ const plannedFeeds = [
 ];
 
 export default function NewsPage() {
+  const [isMuted, setIsMuted] = useState(true);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  const toggleMute = () => {
+    setIsMuted((prev) => !prev);
+  };
+
   return (
-    <main className="min-h-screen bg-black text-white pt-24">
+    <main className="min-h-screen bg-black text-white pt-24 font-sans">
       <section className="relative min-h-[70vh] overflow-hidden border-b border-white/10">
         <video
-          className="absolute inset-0 h-full w-full object-cover opacity-30"
+          ref={videoRef}
+          className="absolute inset-0 h-full w-full object-cover opacity-75"
           src="/videos/hero.mp4"
           autoPlay
-          muted
+          muted={isMuted}
           loop
           playsInline
         />
-        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(0,0,0,0.95),rgba(0,0,0,0.56))]" />
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 min-h-[70vh] flex items-end pb-16">
+        {/* Tightened linear gradient string for Tailwind arbitrary value compatibility */}
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(0,0,0,0.85),rgba(0,0,0,0.4))] z-0" />
+        
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 min-h-[70vh] flex flex-col justify-end pb-16">
           <div className="max-w-4xl">
-            <span className="block text-[10px] font-black uppercase tracking-[0.45em] text-[var(--color-f1-red)] mb-6">
+            <span className="block text-[10px] font-black uppercase tracking-[0.45em] text-f1-red mb-6">
               APEX Newsroom
             </span>
             <h1 className="text-6xl sm:text-8xl font-display font-black uppercase italic tracking-tighter leading-[0.85]">
               Source-Governed Coverage
             </h1>
-            <p className="mt-8 max-w-2xl text-white/65 text-lg leading-relaxed">
+            <p className="mt-8 max-w-2xl text-white/90 text-lg leading-relaxed drop-shadow-lg">
               The news surface is reserved for licensed, attributed, and source-aware coverage. No scraped article body or unsourced rumor stream will ship here.
             </p>
           </div>
+
+          <button 
+            onClick={toggleMute}
+            className="mt-10 self-start flex items-center gap-3 bg-white/10 backdrop-blur-md border border-white/20 px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-white hover:text-black transition-all duration-300"
+          >
+            {isMuted ? "Unmute Atmosphere" : "Mute Atmosphere"}
+          </button>
         </div>
       </section>
 
@@ -48,13 +69,13 @@ export default function NewsPage() {
             <p className="mt-6 text-white/55 leading-relaxed max-w-xl">
               This module will activate after the source registry, article envelope, dedupe logic, and rights-safe summary rules are implemented.
             </p>
-            <Link href="/" className="inline-flex mt-8 bg-white text-black px-7 py-4 rounded-sm text-xs font-black uppercase tracking-widest hover:bg-[var(--color-f1-red)] hover:text-white transition-ui">
+            <Link href="/" className="inline-flex mt-8 bg-white text-black px-7 py-4 rounded-sm text-xs font-black uppercase tracking-widest hover:bg-f1-red hover:text-white transition-all duration-300">
               Return to Race Hub
             </Link>
           </div>
 
           <aside className="lg:col-span-5 bg-white text-black p-8 sm:p-10">
-            <span className="text-[10px] font-black uppercase tracking-[0.35em] text-[var(--color-f1-red)]">
+            <span className="text-[10px] font-black uppercase tracking-[0.35em] text-f1-red">
               Feed Plan
             </span>
             <div className="mt-8 divide-y divide-black/10">

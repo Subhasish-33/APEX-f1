@@ -30,7 +30,7 @@ CRITICAL INVARIANTS (unchanged from Phase 1)
 from __future__ import annotations
 
 import logging
-from typing import Optional
+from typing import Optional, Any
 
 from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
