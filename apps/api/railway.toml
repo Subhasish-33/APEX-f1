@@ -2,8 +2,9 @@
 builder = "NIXPACKS"
 
 [deploy]
-# Hardcoding port 8000 to match the Railway Networking configuration.
-# This resolves the 502 Bad Gateway caused by the 8080/8000 mismatch.
-startCommand = "uvicorn main:app --host 0.0.0.0 --port 8000"
+startCommand = "uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000}"
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 10
+healthcheckPath = "/health/live"
+healthcheckTimeout = 10
+healthcheckInterval = 30
