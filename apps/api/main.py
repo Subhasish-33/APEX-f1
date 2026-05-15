@@ -11,7 +11,8 @@ from routes import (
     predictions, 
     standings,
     health,
-    sync
+    sync,
+    live
 )
 from db import engine
 from models import Base
@@ -22,7 +23,13 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+from core.exceptions import ApexException, apex_exception_handler, global_exception_handler
+
 app = FastAPI(title="APEX-F1 API (Production Hardened)")
+
+# Register Exception Handlers
+app.add_exception_handler(ApexException, apex_exception_handler)
+app.add_exception_handler(Exception, global_exception_handler)
 
 # Middleware
 app.add_middleware(
@@ -50,6 +57,7 @@ app.include_router(predictions.router, tags=["Predictions"])
 app.include_router(standings.router, tags=["Standings"])
 app.include_router(sync.router, tags=["Platform Sync"])
 app.include_router(health.router, tags=["Platform Health"])
+app.include_router(live.router, prefix="/live", tags=["Live Session"])
 
 @app.get("/")
 async def root():
