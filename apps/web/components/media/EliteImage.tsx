@@ -137,7 +137,7 @@ export default function EliteImage({
 
   return (
     <div className={`elite-image-container ${containerClassName}`} style={containerStyle}>
-      {lqipBackground && loadState !== "loaded" && (
+      {lqipBackground && (
         <div
           className={`elite-image-lqip ${loadState === "loaded" ? "elite-image-lqip-hidden" : ""}`}
           style={{

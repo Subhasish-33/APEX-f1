@@ -37,7 +37,7 @@ export default function DriverIntro() {
           Meet The <span className="text-f1-red">Class of 2026</span>
         </h2>
         <p className="text-gray-200 text-lg font-medium leading-relaxed mb-8">
-          20 drivers. 10 teams. One goal. Experience the data-driven journey of the world's most elite athletes as they push the limits of physics and performance.
+          20 drivers. 10 teams. One goal. Experience the data-driven journey of the world&apos;s most elite athletes as they push the limits of physics and performance.
         </p>
         
         <div className="flex gap-6">

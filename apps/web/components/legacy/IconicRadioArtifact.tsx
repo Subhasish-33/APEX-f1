@@ -44,7 +44,7 @@ export default function IconicRadioArtifact({
         <blockquote className="radio-transcript">
           {/* Format: "Engineer: ..." or just the driver quote */}
           <div className="radio-quote">
-            <p>"{transcript}"</p>
+            <p>&quot;{transcript}&quot;</p>
           </div>
           <footer className="radio-speaker">— {driverName}</footer>
         </blockquote>
