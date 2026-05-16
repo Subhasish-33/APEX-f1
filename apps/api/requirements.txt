@@ -16,4 +16,5 @@ structlog
 Pillow
 aiohttp
 beautifulsoup4
-aiofilessupabase
+aiofiles
+supabase
