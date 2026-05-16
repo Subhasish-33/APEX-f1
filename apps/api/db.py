@@ -20,7 +20,7 @@ if not DATABASE_URL:
 # server doesn't advertise TLS.
 # Supabase (and most cloud PG providers) require SSL.
 _connect_args: dict = {
-    "ssl": "require",
+    "ssl": True,
     "statement_cache_size": 0  # Compatibility with connection poolers
 }
 
