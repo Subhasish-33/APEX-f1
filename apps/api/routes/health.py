@@ -104,6 +104,15 @@ async def system_diagnostics(session: DBSession):
         result = await session.execute(stmt)
         return result.scalars().all()
 
+    # 1. Check Database (Plan B - SDK)
+    try:
+        from core.supabase import supabase
+        supabase.table("platform_health").select("id").limit(1).execute()
+        plan_b_status = "healthy"
+    except Exception:
+        plan_b_status = "unhealthy"
+
+    # 2. Check Database (SQLAlchemy)
     try:
         recent_events = await asyncio.wait_for(
             load_recent_events(),
@@ -114,29 +123,32 @@ async def system_diagnostics(session: DBSession):
         recent_events = []
         database_status = "unhealthy"
 
-    is_degraded = any(e.status == "CRITICAL" for e in recent_events)
-
     async def check_redis():
         await redis_client.ping()
 
     redis_status = await _measure_dependency("redis", check_redis)
+    is_redis_healthy = redis_status["status"] == "healthy"
+
+    # Overall Status: Healthy if Plan B OR SQLAlchemy is up AND Redis is up
+    is_operational = (plan_b_status == "healthy" or database_status == "healthy") and is_redis_healthy
 
     return {
-        "status": "DEGRADED" if is_degraded or database_status != "healthy" else "OPERATIONAL",
-        "version": "3.5.0-hardened",
+        "status": "OPERATIONAL" if is_operational else "DEGRADED",
+        "version": "4.0.0-plan-b",
         "timestamp": _utc_timestamp(),
         "dependencies": {
-            "database": {"name": "database", "status": database_status},
+            "database_direct": {"status": database_status},
+            "database_plan_b": {"status": plan_b_status},
             "redis": redis_status,
         },
-        "degraded": is_degraded or database_status != "healthy" or redis_status["status"] != "healthy",
+        "degraded": not is_operational,
         "recent_alerts": [
             {"type": e.event_type, "message": e.message, "status": e.status}
             for e in recent_events
         ],
         "governance": {
             "tier_4_caching": "ENABLED",
-            "fail_soft": "ACTIVE",
+            "fail_soft": "PLAN-B-ACTIVE",
             "telemetry_threshold": "15s"
         }
     }

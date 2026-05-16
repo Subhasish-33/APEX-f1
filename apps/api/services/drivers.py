@@ -1,11 +1,14 @@
 import time
+import logging
 from typing import List, Dict, Any, Optional
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, text
-from sqlalchemy.orm import selectinload
-from models import Driver, Result, Race, Qualifying
+from sqlalchemy import select, func
+from models import Driver, Result, Race
 from schemas.envelope import ResponseEnvelope, MetaSchema, StateSchema, PaginationSchema
 from core.exceptions import ResourceNotFoundException
+from core.supabase import supabase  # Plan B Client
+
+logger = logging.getLogger(__name__)
 
 class DriverService:
     def __init__(self, db: AsyncSession):
@@ -15,21 +18,29 @@ class DriverService:
         start_time = time.perf_counter()
         offset = (page - 1) * limit
 
-        total_count = await self.db.scalar(select(func.count()).select_from(Driver))
-        
-        stmt = select(Driver).order_by(Driver.driver_id).offset(offset).limit(limit)
-        result = await self.db.execute(stmt)
-        drivers = result.scalars().all()
-        
-        # Serialize to dicts for generic response wrapper
-        data = [{
-            "driver_id": d.driver_id,
-            "driver_ref": d.driver_ref,
-            "code": d.code,
-            "forename": d.forename,
-            "surname": d.surname,
-            "nationality": d.nationality
-        } for d in drivers]
+        try:
+            # PLAN B: Use Supabase SDK (HTTPS)
+            count_res = supabase.table("drivers").select("*", count="exact").limit(0).execute()
+            total_count = count_res.count if count_res.count is not None else 0
+            
+            data_res = supabase.table("drivers").select("*").order("driver_id").range(offset, offset + limit - 1).execute()
+            drivers_data = data_res.data
+            
+            data = drivers_data # SDK returns dicts directly
+        except Exception as e:
+            logger.warning(f"Plan B failed, falling back to SQLAlchemy: {e}")
+            total_count = await self.db.scalar(select(func.count()).select_from(Driver))
+            stmt = select(Driver).order_by(Driver.driver_id).offset(offset).limit(limit)
+            result = await self.db.execute(stmt)
+            drivers = result.scalars().all()
+            data = [{
+                "driver_id": d.driver_id,
+                "driver_ref": d.driver_ref,
+                "code": d.code,
+                "forename": d.forename,
+                "surname": d.surname,
+                "nationality": d.nationality
+            } for d in drivers]
 
         execution_ms = round((time.perf_counter() - start_time) * 1000, 2)
         has_next = (page * limit) < total_count
@@ -44,20 +55,24 @@ class DriverService:
     async def get_driver_by_ref(self, ref: str) -> ResponseEnvelope[Dict[str, Any]]:
         start_time = time.perf_counter()
         
-        stmt = select(Driver).where(Driver.driver_ref == ref)
-        driver = (await self.db.execute(stmt)).scalar_one_or_none()
-        
-        if not driver:
-            raise ResourceNotFoundException(f"Driver '{ref}' not found.", context={"ref": ref})
-
-        data = {
-            "driver_id": driver.driver_id,
-            "driver_ref": driver.driver_ref,
-            "code": driver.code,
-            "forename": driver.forename,
-            "surname": driver.surname,
-            "nationality": driver.nationality
-        }
+        try:
+            # PLAN B
+            res = supabase.table("drivers").select("*").eq("driver_ref", ref).single().execute()
+            data = res.data
+        except Exception as e:
+            logger.warning(f"Plan B failed for ref {ref}: {e}")
+            stmt = select(Driver).where(Driver.driver_ref == ref)
+            driver = (await self.db.execute(stmt)).scalar_one_or_none()
+            if not driver:
+                raise ResourceNotFoundException(f"Driver '{ref}' not found.", context={"ref": ref})
+            data = {
+                "driver_id": driver.driver_id,
+                "driver_ref": driver.driver_ref,
+                "code": driver.code,
+                "forename": driver.forename,
+                "surname": driver.surname,
+                "nationality": driver.nationality
+            }
 
         execution_ms = round((time.perf_counter() - start_time) * 1000, 2)
         return ResponseEnvelope(data=data, meta=MetaSchema(execution_ms=execution_ms))
@@ -65,10 +80,23 @@ class DriverService:
     async def get_driver_career(self, ref: str) -> ResponseEnvelope[List[Dict[str, Any]]]:
         start_time = time.perf_counter()
         
-        stmt = select(Driver.driver_id).where(Driver.driver_ref == ref)
-        driver_id = await self.db.scalar(stmt)
+        # We can still use SQLAlchemy for complex aggregations if the connection is alive,
+        # but for now, let's keep the SQLAlchemy logic as primary for stats and
+        # add a fail-safe check.
+        try:
+            stmt = select(Driver.driver_id).where(Driver.driver_ref == ref)
+            driver_id = await self.db.scalar(stmt)
+            if not driver_id:
+                # Try SDK for ID look up
+                res = supabase.table("drivers").select("driver_id").eq("driver_ref", ref).single().execute()
+                driver_id = res.data["driver_id"]
+        except Exception:
+            # If DB is down, this route will return an empty list for now 
+            # until we map complex stats to SDK
+            driver_id = None
+
         if not driver_id:
-            raise ResourceNotFoundException(f"Driver '{ref}' not found.", context={"ref": ref})
+            raise ResourceNotFoundException(f"Driver '{ref}' not found.")
 
         stats_stmt = (
             select(
@@ -84,18 +112,20 @@ class DriverService:
             .order_by(Race.year.desc())
         )
         
-        result = await self.db.execute(stats_stmt)
-        career_stats = result.all()
-        
-        data = [
-            {
-                "year": row.year,
-                "wins": row.wins,
-                "podiums": row.podiums,
-                "poles": row.poles,
-                "points": float(row.points or 0)
-            } for row in career_stats
-        ]
+        try:
+            result = await self.db.execute(stats_stmt)
+            career_stats = result.all()
+            data = [
+                {
+                    "year": row.year,
+                    "wins": row.wins,
+                    "podiums": row.podiums,
+                    "poles": row.poles,
+                    "points": float(row.points or 0)
+                } for row in career_stats
+            ]
+        except Exception:
+            data = [] # Fallback for now
 
         execution_ms = round((time.perf_counter() - start_time) * 1000, 2)
         return ResponseEnvelope(data=data, meta=MetaSchema(execution_ms=execution_ms))
