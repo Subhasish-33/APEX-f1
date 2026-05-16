@@ -143,7 +143,11 @@ async def system_diagnostics(session: DBSession):
         },
         "degraded": not is_operational,
         "recent_alerts": [
-            {"type": e.event_type, "message": e.message, "status": e.status}
+            {
+                "type": getattr(e, "component", "SYSTEM"),
+                "message": getattr(e, "message", "Operational"),
+                "status": getattr(e, "status", "OK")
+            }
             for e in recent_events
         ],
         "governance": {
