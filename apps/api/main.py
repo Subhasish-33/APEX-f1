@@ -35,7 +35,11 @@ app.add_exception_handler(Exception, global_exception_handler)
 # Middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "https://apex-f1-web.vercel.app",
+        "http://localhost:3000",
+        "http://localhost:8001",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

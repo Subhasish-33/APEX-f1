@@ -14,7 +14,7 @@ from schemas import PlatformHealthResponse
 
 router = APIRouter(prefix="/health")
 DBSession = Annotated[AsyncSession, Depends(get_db)]
-HEALTHCHECK_TIMEOUT_SECONDS = 2.0
+HEALTHCHECK_TIMEOUT_SECONDS = 5.0
 
 
 def _utc_timestamp() -> str:
