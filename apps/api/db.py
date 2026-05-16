@@ -18,12 +18,11 @@ if not DATABASE_URL:
 # asyncpg uses ssl="require" to enforce TLS without full cert verification.
 # For local fallback (postgres://localhost), ssl will simply be ignored if the
 # server doesn't advertise TLS.
-_connect_args: dict = {}
-if "supabase" in DATABASE_URL or "neon" in DATABASE_URL or "render" in DATABASE_URL:
-    _connect_args["ssl"] = "require"
-
-# Supabase (PgBouncer) compatibility: asyncpg's correct parameter is 'statement_cache_size'
-_connect_args["statement_cache_size"] = 0
+# Supabase (and most cloud PG providers) require SSL.
+_connect_args: dict = {
+    "ssl": "require",
+    "statement_cache_size": 0  # Compatibility with connection poolers
+}
 
 engine = create_async_engine(
     DATABASE_URL,
