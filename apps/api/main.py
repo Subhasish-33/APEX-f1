@@ -37,8 +37,10 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "https://apex-f1-web.vercel.app",
+        "https://apex-f1-web-git-develop-subhasishs-projects.vercel.app",
         "http://localhost:3000",
         "http://localhost:8001",
+        "https://successful-liberation-production.up.railway.app",
     ],
     allow_credentials=True,
     allow_methods=["*"],
