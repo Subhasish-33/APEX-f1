@@ -21,19 +21,18 @@ if not DATABASE_URL:
 # Supabase (and most cloud PG providers) require SSL.
 _connect_args: dict = {
     "ssl": True,
-    "statement_cache_size": 0  # Compatibility with connection poolers
+    "command_timeout": 60,
+    "statement_cache_size": 0
 }
 
 engine = create_async_engine(
     DATABASE_URL,
     echo=False,
-    # Connection pool tuning — keeps the number of active connections low
-    # so Supabase free-tier connection limits are respected.
-    pool_size=5,
-    max_overflow=10,
-    pool_pre_ping=True,       # validate connections before use (avoids stale conn errors)
-    pool_recycle=1800,        # recycle connections every 30 min
-    connect_args=_connect_args,
+    pool_size=10,
+    max_overflow=20,
+    pool_recycle=3600,
+    pool_pre_ping=True,
+    connect_args=_connect_args
 )
 
 async_session = async_sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
